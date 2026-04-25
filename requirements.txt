@@ -1,0 +1,6 @@
+pennylane
+qiskit
+qiskit-machine-learning
+numpy
+matplotlib
+torch
