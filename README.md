@@ -53,23 +53,23 @@ explain entanglement and interference without hand-waving.
 **Outcome:** Train and analyze variational QML models on real (small) datasets;
 encounter the barren plateau problem first-hand; benchmark quantum vs classical.
 
-### 2A. Variational Quantum Eigensolver — H2 molecule (weeks 9–11)
+### 2A. Variational Quantum Eigensolver — H2 molecule (weeks 9–11) ✓ `84b45b0`
 - PennyLane VQE tutorial as starting point
 - Hands-On Vol.1 VQE chapter for theory grounding
 - Schuld & Petruccione ch.5
 
-### 2B. QAOA on MaxCut (weeks 12–14)
+### 2B. QAOA on MaxCut (weeks 12–14) ✓ `84b45b0`, `0c03d9d`
 - Implement on a 5–8 node graph
 - Watch optimization stall — that *is* the lesson (barren plateaus)
 - Cross-implement once in `qiskit-machine-learning` for framework comparison
 
-### 2C. Variational classifier (weeks 15–17)
+### 2C. Variational classifier (weeks 15–17) ✓ `0c03d9d`
 - 2-class subset of Iris or MNIST
 - PennyLane `TorchLayer` for a hybrid model
 - Hands-On Vol.1 data-encoding chapter — encoding choice dominates results
 - Benchmark against a 1-layer classical MLP with matched parameter count
 
-### 2D. Quantum kernel + classical SVM (weeks 18–20)
+### 2D. Quantum kernel + classical SVM (weeks 18–20) ✓ `902ac72`
 - Reference: [Havlíček et al. 2019](https://arxiv.org/abs/1804.11326)
 - Use `qiskit-machine-learning`'s `FidelityQuantumKernel`
 - Benchmark vs RBF kernel on the same dataset
@@ -78,17 +78,19 @@ encounter the barren plateau problem first-hand; benchmark quantum vs classical.
 **Primary text (whole tier):** Schuld & Petruccione, *Machine Learning with Quantum Computers* — the one book that matters.
 **Bookmark:** [artix41/awesome-quantum-ml](https://github.com/artix41/awesome-quantum-ml) for paper deep-dives by topic.
 
-**Tier 2 checkpoint:** Train a hybrid model on a non-toy dataset and write up
-honest observations on barren plateaus and quantum-vs-classical tradeoffs.
+**Tier 2 checkpoint** ✓ `902ac72` — week 21 capstone (`tier2/week21_capstone_hybrid.py`)
+trains a hybrid model on `digits` 0-vs-1 to 0.986 test accuracy with the
+barren-plateau probe rerun at the working qubit count. Cross-tier reflection
+in `TIER2_REVIEW.md`.
 
 ---
 
 ## Tier 3 — Stretch (~6–8 weeks)
 
 **Outcome:** Operate at the edge of current research. Produce one
-publishable-quality artifact (notebook + writeup).
+end-to-end quantum-native artifact (script suite + writeup).
 
-Pick **one** of:
+The four candidate projects from the original roadmap were:
 - **Quantum autoencoder** — data compression in quantum state space
 - **Hybrid model on a real dataset** — choose a problem from
   [MonitSharma's portfolio](https://github.com/MonitSharma/Quantum-Machine-Learning-on-Near-Term-Quantum-Devices)
@@ -96,6 +98,34 @@ Pick **one** of:
 - **Tensor network (MPS) methods** — classical simulators that bridge to
   active research; great for understanding what quantum buys you
 - **Reproduce one paper** from artix41's awesome list
+
+**Project chosen:** quantum autoencoder ([Romero, Olson, Aspuru-Guzik 2017](https://arxiv.org/abs/1612.02806))
+on the H₂ ground-state manifold from the Tier 2 VQE pipeline. Detail in
+`TIER3_PLAN.md`. Six weeks (22–27); each is one runnable
+`tier3/weekN_*.py` paired with `tier3/weekN_notes.md`.
+
+### 3A. QAE foundations (week 22) ✓
+Build the H₂ ground-state dataset, partial-trace utilities, and the
+fidelity / Uhlmann-fidelity helpers (`tier3/utils/states.py`).
+
+### 3B. QAE training + generalization (weeks 23–24) ✓
+4-qubit, 16-parameter, depth-4 RY+CNOT encoder trained on the Romero
+local cost; 5-seed mean-±-std reporting; held-out generalization +
+latent-space monotonicity (Spearman-ρ test on $r$ vs PC1 of $\rho_{\text{code}}$).
+
+### 3C. Noise robustness (week 25) ✓
+Switch from `default.qubit` → `default.mixed` with depolarizing channel
+noise; sweep $p \in \{0, 10^{-3}, 5\cdot10^{-3}, 10^{-2}, 2\cdot10^{-2}\}$;
+trained-vs-random baseline at every noise level.
+
+### 3D. Classical autoencoder baselines (week 26) ✓
+Linear AE oracle (256 params) and a parameter-matched nonlinear AE for
+the honest comparison; both reported, neither cherry-picked.
+
+### Capstone — week 27 ✓
+`tier3/week27_capstone.py` reruns weeks 23–26 in one execution, writes
+`week27_summary.csv` + a 2×2 figure panel, and asserts every prior
+weekly headline within 2σ. Cross-tier writeup in `TIER3_REVIEW.md`.
 
 ---
 
@@ -130,8 +160,27 @@ extra 2 weeks, take it — skipping foundations is how QML becomes cargo-culting
 
 ## Repo evolution
 
-This README is the spine. As work progresses:
-- `tier1/` — one notebook per Codebook section, plus checkpoint scripts
-- `tier2/` — VQE, QAOA, classifier, kernel directories
-- `tier3/` — single chosen project
-- `requirements.txt` added once first code lands
+This README is the spine. The repo now ends green across all three
+tiers:
+
+- `tier1/` — 8 weeks of literacy: gates, Bell/GHZ, measurement,
+  Deutsch–Jozsa, Grover, QFT, QPE, plus the from-scratch checkpoint.
+- `tier2/` — 13 weeks of core QML across four sub-projects (VQE,
+  QAOA, variational classifier, quantum kernel) + the week-21 hybrid
+  capstone. `TIER2_REVIEW.md` is the cross-tier honest writeup.
+- `tier3/` — 6 weeks on the H₂-ground-state quantum autoencoder
+  (`TIER3_PLAN.md` → weeks 22–27 → `TIER3_REVIEW.md` → capstone CSV +
+  figure).
+- `requirements.txt` covers every tier's deps.
+
+Each tier directory holds flat `weekN_<topic>.py` + `weekN_notes.md`
+files plus a `utils/` submodule for shared helpers. Every week is a
+self-checking script: assertion-gated `main()`, exits non-zero if any
+gate fails. From a clean checkout:
+
+```bash
+pip install -r requirements.txt
+for f in tier{1,2,3}/week*.py; do echo "== $f =="; python "$f" || exit 1; done
+```
+
+is the green-or-red signal for the whole curriculum.
