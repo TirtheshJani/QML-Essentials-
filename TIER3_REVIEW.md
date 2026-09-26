@@ -176,11 +176,11 @@ Three honest readings of this table:
   at parameter count" — it's "parameter count isn't the right
   comparison axis."
 
-- **The QAE has structural advantages the classical AE can't compete
-  with.** The classical AE needs the input as a $\mathbb{C}^{16}$
-  amplitude vector, which on real hardware costs full state tomography
-  — exponentially more measurements than the QAE needs (which
-  consumes the state directly). The classical AE also produces an
+- **At larger $n$ the QAE would have structural advantages (argued
+  here, not measured; see §6).** The classical AE needs the input as a
+  $\mathbb{C}^{16}$ amplitude vector, which on real hardware costs full
+  state tomography — in general exponentially more measurements than the
+  QAE needs (which consumes the state directly). The classical AE also produces an
   amplitude-vector output that has to be re-prepared on a quantum
   device for any downstream computation — also exponential overhead.
   Neither cost shows up in our simulator-based comparison, but they
