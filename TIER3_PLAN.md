@@ -191,6 +191,9 @@ Pull everything into one runnable artifact + a long-form review.
   (4) what would change before tier 4 / publication-quality work.
 - Pass: `week27_capstone.py` reproduces every headline number from
   weeks 23–26 within 2 std, writes the CSV + PNG, and asserts each gate.
+  As built, it re-checks the weekly pass gates loosened by 2 std and
+  does not compare against the weekly numbers (see
+  `tier3/week27_notes.md`).
 
 ## Critical files to modify
 
