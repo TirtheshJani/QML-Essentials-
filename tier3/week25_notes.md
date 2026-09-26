@@ -23,7 +23,8 @@ calibration data and a gate-specific noise model.
 
 ## Random-encoder baseline
 
-We also evaluate a *random* (untrained) encoder at each $p$. Reason:
+We also evaluate 20 *random* (untrained) encoders at each $p$ (seeded,
+the same 20 draws at every $p$) and report their mean ± std. Reason:
 on a depolarizing channel of any nonzero $p$, *every* encoder loses
 fidelity. The interesting question is whether a trained QAE has a real
 "signal" advantage over an arbitrary one. Concretely:
@@ -36,6 +37,10 @@ If $\Delta(p) \to 0$ at large $p$, training stops mattering. If
 $\Delta(p)$ stays > 30 pp through $p = 0.005$, the QAE is still
 extracting useful structure at the mid-sweep point. The
 assertion at the bottom requires the latter.
+
+Measured (pinned `requirements.txt`): at $p = 0.005$ the trained QAE's
+test fidelity is 0.8707 ± 0.0090 (3 seeds) against 0.2606 ± 0.1111 for
+the random encoders, $\Delta = +61$ pp; at $p = 0.02$, $\Delta = +42$ pp.
 
 ## How training under noise differs
 

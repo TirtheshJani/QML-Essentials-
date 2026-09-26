@@ -23,7 +23,7 @@ weeks 23-26 and writes the QAE and classical-AE rows to
 | QAE local fidelity, all 22 states, 5 seeds (week 23) | 0.9825 ± 0.0214 |
 | QAE test reconstruction fidelity, 5 seeds (week 24) | 0.9871 ± 0.0258 |
 | Spearman(r, latent PC1), seed 0 (week 24); 1000 untrained encoders give median abs. value 1.000 | -1.000 |
-| QAE test local fidelity at depolarizing p = 0.005, 3 seeds (week 25) | 0.8707 ± 0.0090 (random encoder 0.1952) |
+| QAE test local fidelity at depolarizing p = 0.005, 3 seeds (week 25) | 0.8707 ± 0.0090 (20 random encoders: 0.2606 ± 0.1111) |
 | Linear classical AE, 256 params, test reconstruction (week 26) | 1.0000 ± 0.0000 |
 | Nonlinear classical AE, 136 params, test reconstruction (week 26) | 0.9811 ± 0.0211 |
 
@@ -169,7 +169,7 @@ control that passes the same test.
 ### 3C. Noise robustness (week 25) ✓
 Switch from `default.qubit` → `default.mixed` with depolarizing channel
 noise; sweep $p \in \{0, 10^{-3}, 5\cdot10^{-3}, 10^{-2}, 2\cdot10^{-2}\}$;
-trained-vs-random baseline at every noise level.
+trained QAE (3 seeds) vs 20 seeded random encoders at every noise level.
 
 ### 3D. Classical autoencoder baselines (week 26) ✓
 Linear AE oracle (256 params) and a small nonlinear AE (136 params; the

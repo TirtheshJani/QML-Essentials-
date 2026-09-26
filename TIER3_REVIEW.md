@@ -71,19 +71,21 @@ the data, and the Spearman gate could essentially not fail.
 ### 1.3 Noise robustness was real but limited
 
 Week 25, test local fidelity $P(\text{trash} = 00)$, mean ± std over 3
-seeds:
+seeds for the trained QAE and over 20 seeded random (untrained) encoders,
+the same 20 at every $p$:
 
-| depolarizing rate $p$ | trained-test fidelity | random-encoder | Δ |
+| depolarizing rate $p$ | trained-test fidelity | random encoders (20) | Δ |
 |---:|---:|---:|---:|
-| 0.000 | 0.971 ± 0.021 | 0.182 | **+79 pp** |
-| 0.001 | 0.948 ± 0.018 | 0.185 | **+76 pp** |
-| 0.005 | 0.871 ± 0.009 | 0.195 | **+68 pp** |
-| 0.010 | 0.803 ± 0.011 | 0.207 | **+60 pp** |
-| 0.020 | 0.678 ± 0.010 | 0.224 | **+45 pp** |
+| 0.000 | 0.971 ± 0.021 | 0.2619 ± 0.1325 | **+71 pp** |
+| 0.001 | 0.948 ± 0.018 | 0.2616 ± 0.1278 | **+69 pp** |
+| 0.005 | 0.871 ± 0.009 | 0.2606 ± 0.1111 | **+61 pp** |
+| 0.010 | 0.803 ± 0.011 | 0.2595 ± 0.0934 | **+54 pp** |
+| 0.020 | 0.678 ± 0.010 | 0.2579 ± 0.0669 | **+42 pp** |
 
 The $p$ values are sweep points, not calibrated to any device. At the
-mid-sweep point $p = 5\times10^{-3}$ the trained QAE was 68 pp above a
-random encoder, but the absolute fidelity has dropped from 0.97 to 0.87. That delta would compound in any
+mid-sweep point $p = 5\times10^{-3}$ the trained QAE was 61 pp above the
+mean of the random encoders, but the absolute fidelity has dropped from
+0.97 to 0.87. That delta would compound in any
 downstream computation that fed the decoded state into another circuit.
 
 Interpreting the slope: the decline flattens as $p$ grows (about 23
