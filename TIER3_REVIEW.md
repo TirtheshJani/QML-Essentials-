@@ -209,32 +209,32 @@ is the realistic deployment.
 
 In rough order of expected impact:
 
-1. **Move to real hardware.** Tier 2 review item 2 carried over to
-   Tier 3 (we hit `default.mixed`, but not IBM). The next step is to
-   run a *trained* QAE on a current IBM device's free tier, with a
-   SWAP-test ancilla for fidelity measurement. The
-   noise model used here (uniform per-gate depolarizing) is the
-   simplest plausible — real devices have correlated, non-Markovian,
-   and gate-specific errors that this sweep doesn't capture.
+1. **Move to real hardware.** Tier 2 review item 2 carried over to Tier
+   3 (we hit `default.mixed`, but not IBM). The next step is to run a
+   *trained* QAE on a current IBM device's free tier, with a SWAP-test
+   ancilla for fidelity measurement. The noise model used here (uniform
+   per-gate depolarizing) is the simplest plausible — real devices have
+   correlated, non-Markovian, and gate-specific errors that this sweep
+   doesn't capture.
 
 2. **Test the QAE on data access, not on compression power.** A
    non-linear dataset would not help the QAE. Its encoder is a unitary
    followed by discarding the trash qubits, so over any set of training
    states its mean trash fidelity can never exceed the sum of the $2^k$
    largest eigenvalues of the states' average density matrix ($k$ code
-   qubits, so 4 eigenvalues here). A linear map that projects onto the
-   matching $2^k$ eigenvectors (PCA with a $2^k$-dimensional complex
-   code) reaches exactly that sum, and reconstruction fidelity is at
-   most trash fidelity (§1.1). So a dataset that is not low-rank in
-   amplitude space would limit the QAE as much as the linear AE, and
+   qubits; here $k = 2$, so 4 eigenvalues). A linear map that projects
+   onto the matching $2^k$ eigenvectors (PCA with a $2^k$-dimensional
+   complex code) reaches exactly that sum, and reconstruction fidelity
+   is at most trash fidelity (§1.1). So a dataset that is not low-rank
+   in amplitude space would limit the QAE as much as the linear AE, and
    would favour a nonlinear classical AE. `tier3/check_qae_bounds.py`
    (not one of the week scripts) checks this on a curved 30-state family
    with 13 eigenvalues above $10^{-6}$: an encoder built from the top 4
    eigenvectors and the rank-4 projection both reach 0.6894, and no
-   Haar-random or RY+CNOT encoder goes above it. The case for a QAE is that it acts on the quantum
-   state without tomography (§3, §6). The next experiment should keep a
-   low-rank ensemble and test, at larger $n$, a setting where a
-   classical AE cannot read the amplitudes.
+   Haar-random or RY+CNOT encoder goes above it. The case for a QAE is
+   that it acts on the quantum state without tomography (§3, §6). The
+   next experiment should keep a low-rank ensemble and test, at larger
+   $n$, a setting where a classical AE cannot read the amplitudes.
 
 3. **Train on the reconstruction cost directly.** We trained on the
    Romero trash-fidelity cost because it's cheap and differentiable on
@@ -296,7 +296,7 @@ was only that the head-to-head table exists. Week 23's final-gradient
 gate (5-seed mean norm > $10^{-3}$) is no evidence against a plateau
 either: a converged run has near-zero gradient, and the gate passes
 (mean 0.0023) because seeds 0 and 1 have not converged. It stays in
-the script because it was fixed before the first run; the
+the script because it was fixed before the first full run; the
 barren-plateau evidence is the init-gradient gate (0.44 > 0.3).
 The week-24 held-out split is weaker than it looks as well, since on
 this dataset held-out fidelity follows from training fidelity (§1.1).
