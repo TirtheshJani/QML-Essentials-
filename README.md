@@ -246,4 +246,6 @@ pip install -r requirements.txt
 for f in tier{1,2,3}/week*.py; do echo "== $f =="; python "$f" || exit 1; done
 ```
 
-is the green-or-red signal for the whole curriculum.
+is the green-or-red signal for the whole curriculum. The loop rewrites
+`tier2/week20_results.csv` on every run: its `wall_s` column is
+wall-clock time, so `git status` shows it as modified afterwards.
