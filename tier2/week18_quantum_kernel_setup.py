@@ -68,9 +68,10 @@ def text_heatmap(K, labels, title="K"):
 def main():
     section("1. Data: 40-point Iris-0-vs-1 subset, MinMax-scaled to [0, pi]")
     # Use the easy pair (setosa vs versicolor) for the kernel pipeline so the
-    # SVM in week 19 has a clear signal. Pair (1, 2) is harder and runs into
-    # ZZ feature-map kernel concentration -- which week 20 demonstrates by
-    # sweeping the reps parameter.
+    # SVM in week 19 has a clear signal. Pair (1, 2) is harder: its kernel
+    # values barely separate the classes. Week 20 sweeps the reps parameter
+    # and, as a post-hoc control, the input scale, which matters more at
+    # 4 qubits (week20_notes.md, section 3).
     # MinMax scaling to [0, pi] is the Havlicek-paper convention for the ZZ
     # feature map; it keeps the (pi - x_i)(pi - x_j) terms in [0, pi^2] rather
     # than blowing past 2 pi which destroys the kernel structure.
