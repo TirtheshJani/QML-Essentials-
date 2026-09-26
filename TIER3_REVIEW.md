@@ -102,11 +102,13 @@ epochs 0, 50, 100, 150 and 199 in week 23 (0 and 199 in weeks 24 and
 | under noise | not measured: the week 25 and week 27 noise runs do not log gradient norms |
 
 In short: the choice of $n_{\text{qubits}} = 4$ and $L = 4$ from the
-Tier 2 week-14 probe made the QAE trainable by construction. The
-**design discipline** that the Tier 2 review identified as Tier 3's
-pre-requisite worked exactly as predicted. We never had to react to a
-barren-plateau failure during training; we paid for it once at the
-ansatz-selection step.
+Tier 2 week-14 probe kept the QAE's initial gradients away from the
+plateau. The **design discipline** that the Tier 2 review identified as
+Tier 3's pre-requisite worked as intended, though not as predicted in
+size: the measured init gradient norm (0.44) is below the ~1.3 estimate
+in `tier3/week23_notes.md`, but above the 0.3 plateau gate. We never
+had to react to a barren-plateau failure during training; we paid for
+it once at the ansatz-selection step.
 
 One caveat on the cost itself. The training cost
 $C_G = 1 - P(\text{trash} = 00)$ projects onto both trash qubits at
@@ -253,14 +255,19 @@ moving the threshold.
 ## 6. Closing thought
 
 Tier 2 ended with: *on the kinds of problems QML competes for today,
-classical is harder to beat than the marketing suggests*. Tier 3
-extends that with one nuance: **on quantum-native tasks where the
-input is already a quantum state and the output needs to feed into
-another quantum operation, classical models aren't competing at all
-— they need exponential pre- and post-processing to even enter the
-ring**. The QAE is the cleanest demonstration in this curriculum of a
-problem class where the question isn't "can quantum beat classical"
-but "is there a sensible classical comparator at all."
+classical is harder to beat than the marketing suggests*. Tier 3 adds
+one nuance, as an argument rather than a result: on quantum-native
+tasks where the input is already a quantum state and the output feeds
+another quantum operation, a classical autoencoder would need
+tomography on the way in and state preparation on the way out, and for
+large $n$ both costs grow exponentially in general. This study does
+not test that. At 4 qubits everything, the QAE included, is simulated
+classically at negligible cost, and on these states the 256-parameter
+linear AE reconstructs exactly while the 136-parameter AE ties the QAE.
+The QAE is the problem class in this curriculum where the question "is
+there a sensible classical comparator at all" comes up; answering it
+would need larger $n$ and quantum data that cannot be read out
+classically.
 
 The repo evolution closes cleanly:
 - `tier1/` — 8 weeks of literacy
