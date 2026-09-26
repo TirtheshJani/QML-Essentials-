@@ -7,13 +7,14 @@ p in {0.0, 0.001, 0.005, 0.01, 0.02}. At each p we train the QAE for 100
 epochs and report the test local fidelity P(trash = 00), i.e. 1 minus the
 noise-aware Romero cost, on the held-out half of the H2 dataset.
 
-Reference baseline: a 'random encoder' (untrained parameters) at the
-same noise level. This shows that what we measure is the *noise tax* on
-a trained model, not just the noise floor. A useful, trained QAE should
-sit well above the random baseline at every p.
+Reference baseline: 20 random encoders (untrained parameters, seeded;
+the same 20 draws at every p) at the same noise level, reported as mean
++/- std. This shows that what we measure is the *noise tax* on a trained
+model, not just the noise floor. A useful, trained QAE should sit well
+above the random baseline at every p.
 
-Multi-seed: 3 seeds (training is more expensive on default.mixed; week
-27 capstone reruns at 5 seeds).
+Multi-seed: 3 seeds (training is more expensive on default.mixed; the
+week 27 capstone reruns p in {0, 0.005, 0.02} at the same 3 seeds).
 """
 
 import os
@@ -50,6 +51,8 @@ N_EPOCHS = 100
 LR = 0.05
 SEEDS = (0, 1, 2)
 NOISE_LEVELS = (0.0, 0.001, 0.005, 0.01, 0.02)
+N_RANDOM = 20        # untrained encoders per noise level
+RANDOM_SEED = 123
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 NOISE_PNG = os.path.join(THIS_DIR, "week25_noise_curve.png")
@@ -120,39 +123,43 @@ def main():
     print(f"  noise levels p   : {NOISE_LEVELS}")
     print(f"  n_train, n_test  : {len(train_states)}, {len(test_states)}")
     print(f"  seeds            : {SEEDS}")
-    print(f"  cost-of-life     : ~5 min/seed at p>0 -> ~25 min total")
+    print(f"  random encoders  : {N_RANDOM} seeded draws, same at every p")
 
     section("2. Sweep p; train + eval per (p, seed)")
-    print(f"  {'p':>7s}  {'seed':>4s}  {'train fid':>9s}  {'test fid':>9s}  "
-          f"{'random fid':>10s}")
+    print(f"  {'p':>7s}  {'seed':>4s}  {'train fid':>9s}  {'test fid':>9s}")
 
-    grid = np.zeros((len(NOISE_LEVELS), len(SEEDS), 3))  # train, test, random
+    grid = np.zeros((len(NOISE_LEVELS), len(SEEDS), 2))  # train, test
+    rand = np.zeros((len(NOISE_LEVELS), N_RANDOM))       # random, test
 
-    rng = np.random.default_rng(123)
-    random_params = pnp.array(
-        rng.uniform(0.0, 2 * np.pi, size=(N_LAYERS, N_QUBITS)),
-        requires_grad=False,
-    )
+    rng = np.random.default_rng(RANDOM_SEED)
+    random_params = [
+        pnp.array(rng.uniform(0.0, 2 * np.pi, size=(N_LAYERS, N_QUBITS)),
+                  requires_grad=False)
+        for _ in range(N_RANDOM)
+    ]
 
     for i_p, p in enumerate(NOISE_LEVELS):
         for j_s, seed in enumerate(SEEDS):
             params = train_noisy(train_states, p, N_EPOCHS, LR, seed)
             f_train = evaluate_local_fidelity(train_states, params, p)
             f_test = evaluate_local_fidelity(test_states, params, p)
-            f_random = evaluate_local_fidelity(test_states, random_params, p)
-            grid[i_p, j_s] = (f_train, f_test, f_random)
-            print(f"  {p:>7.4f}  {seed:>4d}  {f_train:>9.4f}  "
-                  f"{f_test:>9.4f}  {f_random:>10.4f}")
+            grid[i_p, j_s] = (f_train, f_test)
+            print(f"  {p:>7.4f}  {seed:>4d}  {f_train:>9.4f}  {f_test:>9.4f}")
+        rand[i_p] = [evaluate_local_fidelity(test_states, rp, p)
+                     for rp in random_params]
+        print(f"  {p:>7.4f}  random encoders (test, n={N_RANDOM}): "
+              f"{rand[i_p].mean():.4f} +/- {rand[i_p].std():.4f}")
 
-    section("3. Mean +/- std across seeds")
+    section(f"3. Mean +/- std across seeds (random: across the {N_RANDOM} draws)")
     train_mu, train_sd = grid[:, :, 0].mean(1), grid[:, :, 0].std(1)
     test_mu, test_sd = grid[:, :, 1].mean(1), grid[:, :, 1].std(1)
-    rand_mu, rand_sd = grid[:, :, 2].mean(1), grid[:, :, 2].std(1)
+    rand_mu, rand_sd = rand.mean(1), rand.std(1)
     for i_p, p in enumerate(NOISE_LEVELS):
         gap = test_mu[i_p] - rand_mu[i_p]
         print(f"  p = {p:>6.4f} : train {train_mu[i_p]:.4f} +/- {train_sd[i_p]:.4f}, "
               f"test {test_mu[i_p]:.4f} +/- {test_sd[i_p]:.4f}, "
-              f"random {rand_mu[i_p]:.4f}, gap = {gap*100:+.2f} pp")
+              f"random {rand_mu[i_p]:.4f} +/- {rand_sd[i_p]:.4f}, "
+              f"gap = {gap*100:+.2f} pp")
 
     section("4. Save noise-curve plot")
     fig, ax = plt.subplots(figsize=(7, 4.5))
@@ -162,7 +169,7 @@ def main():
     ax.errorbar(ps, test_mu, yerr=test_sd, marker="s",
                 label="trained (test set)", capsize=3)
     ax.errorbar(ps, rand_mu, yerr=rand_sd, marker="x", linestyle="--",
-                label="random encoder (test)", capsize=3)
+                label=f"random encoders (test, {N_RANDOM} draws)", capsize=3)
     ax.set_xlabel("depolarizing noise rate p (per gate)")
     ax.set_ylabel("local trash-zero fidelity")
     ax.set_xscale("symlog", linthresh=1e-4)
