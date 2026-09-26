@@ -9,7 +9,7 @@ Pipeline:
   1. Build H2 ground-state dataset (week 22).
   2. Train QAE noiseless on train half, evaluate on test half (week 23-24).
   3. Re-train QAE under depolarizing noise (week 25; reduced-grid sweep).
-  4. Train Linear AE and Matched AE classical baselines (week 26).
+  4. Train Linear AE and small nonlinear AE classical baselines (week 26).
   5. Aggregate and write tier3/week27_summary.csv + tier3/week27_results.png.
 
 Pass criteria are the original weekly gates, evaluated on this consolidated
@@ -221,26 +221,26 @@ def main():
 
     section("5. Week 26 - classical baselines")
     lin_test = np.empty(len(SEEDS))
-    mat_test = np.empty(len(SEEDS))
+    small_test = np.empty(len(SEEDS))
     for i, seed in enumerate(SEEDS):
         m_lin, _ = train_classical_ae(
             train_states, code_dim=4, hidden_dim=None,
             n_epochs=N_EPOCHS, lr=LR, seed=seed,
         )
         lin_test[i], _ = reconstruction_fidelity_classical(m_lin, test_states)
-        m_mat, _ = train_classical_ae(
+        m_small, _ = train_classical_ae(
             train_states, code_dim=2, hidden_dim=2,
             n_epochs=N_EPOCHS, lr=LR, seed=seed,
         )
-        mat_test[i], _ = reconstruction_fidelity_classical(m_mat, test_states)
+        small_test[i], _ = reconstruction_fidelity_classical(m_small, test_states)
     print(f"  Linear AE test  : {lin_test.mean():.4f} +/- {lin_test.std():.4f}")
-    print(f"  Matched AE test : {mat_test.mean():.4f} +/- {mat_test.std():.4f}")
+    print(f"  Small AE test   : {small_test.mean():.4f} +/- {small_test.std():.4f}")
     csv_rows.append(("week26", "LinearAE", "test", "recon_fid",
                      f"{lin_test.mean():.4f}",
                      f"{lin_test.std():.4f}", len(SEEDS)))
-    csv_rows.append(("week26", "MatchedAE", "test", "recon_fid",
-                     f"{mat_test.mean():.4f}",
-                     f"{mat_test.std():.4f}", len(SEEDS)))
+    csv_rows.append(("week26", "SmallAE", "test", "recon_fid",
+                     f"{small_test.mean():.4f}",
+                     f"{small_test.std():.4f}", len(SEEDS)))
 
     section("6. Save CSV")
     with open(CSV_PATH, "w", newline="") as f:
@@ -288,10 +288,10 @@ def main():
     # (1, 1) Q-vs-classical bars
     ax = axes[1, 1]
     bar_names = ["QAE\n(16 par)",
-                 f"Matched\nclassical\n({m_mat.n_params()} par)",
+                 f"Small\nnonlinear AE\n({m_small.n_params()} par)",
                  "Linear AE\n(256 par)"]
-    bar_means = [qae_test_rec.mean(), mat_test.mean(), lin_test.mean()]
-    bar_sds = [qae_test_rec.std(), mat_test.std(), lin_test.std()]
+    bar_means = [qae_test_rec.mean(), small_test.mean(), lin_test.mean()]
+    bar_sds = [qae_test_rec.std(), small_test.std(), lin_test.std()]
     colors = ["#3a86ff", "#fb5607", "#06a77d"]
     ax.bar(bar_names, bar_means, yerr=bar_sds, capsize=4, color=colors,
            edgecolor="k", linewidth=0.5)

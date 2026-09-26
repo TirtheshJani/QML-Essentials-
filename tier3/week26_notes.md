@@ -30,14 +30,13 @@ to convergence, the linear AE will achieve ~1.0 fidelity. The QAE
 beating this would imply the dataset is *not* a low-dimensional linear
 subspace, which we know to be false.
 
-**"Matched" nonlinear AE (136 params)** — the fair comparison: a
+**Small nonlinear AE (136 params)**, the closer small-model comparison: a
 $32 \to 2 \to 2 \to 2 \to 32$ AE with `tanh` non-linearities, no
 biases, code dim = 2 ($2{\times}32 + 2{\times}2 + 2{\times}2 +
-32{\times}2 = 136$ weights, printed by the script). It's still bigger
-than the QAE's 16 parameters, so it is not an exact parameter match,
-but it's the smallest sensible classical architecture that touches
-the full 32-D input space and uses a 2-D code matching the QAE's code
-qubits.
+32{\times}2 = 136$ weights, printed by the script). It is not
+parameter-matched: it has 136 weights to the QAE's 16. It is a small
+architecture that touches the full 32-D input space and has a 2-number
+code, one per QAE code qubit.
 
 We can't get the classical AE down to 16 parameters and still touch
 all 32 input axes — a $32 \to 1$ encoder has 32 parameters by itself.
@@ -54,11 +53,11 @@ From the dataset's geometric structure:
 
 1. Linear AE → ~1.0 (oracle on a linear subspace)
 2. QAE → 0.95 ± few pp (limited by the local-cost surrogate gap)
-3. Matched nonlinear AE → 0.85 ± noise (small, has to learn)
+3. Small nonlinear AE → 0.85 ± noise (small, has to learn)
 
 Measured (pinned `requirements.txt`, 5 seeds, test reconstruction
-fidelity): linear AE 1.0000 ± 0.0000, QAE 0.9871 ± 0.0258, matched AE
-0.9811 ± 0.0211. The ranking held, but the matched AE did far better
+fidelity): linear AE 1.0000 ± 0.0000, QAE 0.9871 ± 0.0258, small AE
+0.9811 ± 0.0211. The ranking held, but the small AE did far better
 than predicted and sits within one standard deviation of the QAE.
 
 This is not a story of quantum advantage on this specific dataset. The
@@ -80,7 +79,7 @@ unconstrained capacity. The QAE's interest comes from elsewhere:
 
 - 5-seed mean ± std for each of three models on test reconstruction
   fidelity.
-- QAE − matched and QAE − linear deltas in pp.
+- QAE − small AE and QAE − linear deltas in pp.
 - A note that the linear AE is an oracle, not a fair fight.
 
 ## Pass criterion

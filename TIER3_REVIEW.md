@@ -123,7 +123,7 @@ Week 26, same train/test split, 5 seeds:
 |------|---:|---:|------|
 | Linear classical AE | 256 | **1.0000 ± 0.0000** | oracle on a 2-D subspace |
 | QAE | 16 | **0.9871 ± 0.0258** | the headline result |
-| "Matched" nonlinear classical AE | 136 | **0.9811 ± 0.0211** | smallest sensible classical fight |
+| Small nonlinear classical AE | 136 | **0.9811 ± 0.0211** | closer small-model comparison, not parameter-matched |
 
 Three honest readings of this table:
 
@@ -141,7 +141,9 @@ Three honest readings of this table:
   at 0.9355 in week 24). The comparison is also not
   parameter-matched: the classical AE has 136 weights to the QAE's 16,
   and no classical AE that reads all 32 input numbers can get down to
-  16 (a $32 \to 1 \to 32$ AE already has 64). We report it because not
+  16 (a $32 \to 1 \to 32$ AE already has 64). The only
+  parameter-matched comparison in this curriculum is tier 2 week 17
+  (13 vs 13 parameters, a classifier). We report it because not
   reporting it is dishonest, but the conclusion isn't "quantum wins
   at parameter count" — it's "parameter count isn't the right
   comparison axis."
@@ -221,7 +223,8 @@ each:
   quantum lost.
 - **Tier 3**: produce a single end-to-end quantum-native artifact (the
   H₂-ground-state QAE) with reproducibility, noise robustness, and
-  matched classical baselines, and write up what the result means.
+  classical autoencoder baselines (not parameter-matched), and write up
+  what the result means.
 
 The biggest tier-over-tier delta in the writing is honesty under
 pressure. Tier 1 was structured by Codebook progress; Tier 2 by a

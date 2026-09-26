@@ -40,7 +40,7 @@ QAE checks every box from the Tier 2 review:
 | 2. real / noisy backend | week 25 swaps `default.qubit` → `default.mixed` + depolarizing channel |
 | 3. assertion-gated weeks | every script keeps the tier-1/2 assert pattern |
 | 4. barren-plateau monitoring early | week 23 logs gradient variance from epoch 1 |
-| 5. honest classical baseline | week 26 trains a parameter-matched classical AE |
+| 5. honest classical baseline | week 26 trains classical AE baselines (planned as parameter-matched; as built they have 256 and 136 parameters to the QAE's 16, see `tier3/week26_notes.md`) |
 | 6. multi-seed reproducibility | every headline number reported as mean ± std over 5 seeds |
 
 It is also a *quantum-native* task: input is quantum states, output is
@@ -72,7 +72,7 @@ tier3/
     __init__.py
     states.py        # H2 ground-state dataset, fidelity, partial-trace
     qae.py           # encoder ansatz, Romero cost, training loop
-    classical.py     # parameter-matched classical AE baseline
+    classical.py     # classical AE baselines (not parameter-matched)
   week22_qae_dataset.py            + week22_notes.md
   week23_qae_training.py           + week23_notes.md
   week24_generalization.py         + week24_notes.md
@@ -163,7 +163,9 @@ The honest comparison. Tier 2 review item 5.
   the 16-dim state vector), bottleneck = 4, output ∈ ℝ³², MSE loss.
 - Match the trainable parameter count to the QAE's exactly (16 + small
   classical post-processing on the QAE side ≈ 32 classical parameters
-  for the AE — pick widths that hit this).
+  for the AE — pick widths that hit this). As built this was not
+  possible: a classical AE that reads all 32 inputs has at least 64
+  weights, and week 26 uses 256- and 136-parameter AEs.
 - Train on the same train/test split, 5 seeds, identical optimizer.
 - Compare on (a) reconstruction fidelity (after L2-normalizing the
   classical AE output and treating it as a quantum state) and (b) raw

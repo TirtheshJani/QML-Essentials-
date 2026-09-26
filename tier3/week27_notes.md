@@ -32,7 +32,8 @@ shape of the curve, not the full 5-point sweep from week 25.
   - (b) latent trajectory $(\text{PC1}, \text{PC2})$ colored by $r$
   - (c) noise robustness errorbars
   - (d) head-to-head reconstruction fidelity bar chart
-    (QAE vs matched-classical vs linear-classical oracle)
+    (QAE vs the 136-parameter nonlinear AE vs the linear-AE oracle;
+    neither classical AE is parameter-matched to the QAE's 16)
 
 ## Why a capstone, not just a notebook
 

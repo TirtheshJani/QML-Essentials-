@@ -1,29 +1,18 @@
-"""Parameter-matched classical autoencoder for week 26.
+"""Classical autoencoder baselines for week 26.
 
-Train target: take a length-32 vector (real and imag parts of a 16-dim
-complex amplitude vector concatenated), bottleneck to a 4-dim code,
-reconstruct. Comparable to the QAE because the code dimension matches
-(2-qubit code = 4 complex amplitudes ~ 8 real parameters of information).
+Input: a length-32 real vector (real and imaginary parts of a 16-dim
+complex amplitude vector, concatenated). Week 26 trains two baselines:
 
-Parameter budget (matched to a 4-layer hardware-efficient QAE):
-  QAE trainable parameters = n_layers * n_qubits = 4 * 4 = 16
+  - Linear AE: Linear(32 -> 4) + Linear(4 -> 32), no bias = 256 weights.
+    Its 4-dim code is larger than the 2-D data subspace (week 22), so it
+    can reconstruct the dataset exactly.
+  - Small nonlinear AE: 32 -> 2 -> 2 -> 2 -> 32 with tanh, no bias
+    = 32*2 + 2*2 + 2*2 + 2*32 = 136 weights, with a 2-dim code.
 
-We hit the same total trainable parameter count by choosing the AE widths
-to land on 16 trainable scalars too. The cleanest matched architecture
-turns out to be:
-
-  encoder: Linear(32 -> 4, no bias)    -> 32 * 4 = 128 weights, BUT we
-  decoder: Linear(4 -> 32, no bias)    -> 4 * 32 = 128 weights
-
-That's 256 parameters — vastly more than 16. The QAE will look unfairly
-disadvantaged. So we do two comparisons in week 26:
-
-  - "Tiny classical AE" with widths shrunk to land at ~16 trainable params
-    (e.g. encoder Linear(32 -> 1) + decoder Linear(1 -> 32) = 64 params; the
-    smallest matched architecture is bottleneck = 1, no bias, but that
-    can't represent the 2-D data subspace at all).
-  - "Standard classical AE" at unconstrained capacity (256 params) —
-    serves as the upper bound. Honest comparison reports both.
+Neither is parameter-matched to the QAE's 16 trainable angles
+(n_layers * n_qubits = 4 * 4). A classical AE that reads all 32 inputs
+cannot get that small: 32 -> 1 -> 32 without bias already has 64 weights,
+and a 1-dim code cannot represent the 2-D data subspace exactly.
 
 The classical AE is trained in PyTorch with Adam on MSE loss between
 input and output of the L2-normalized network. After training,
@@ -58,7 +47,8 @@ def real_to_states(reals):
 
 
 class ClassicalAE(nn.Module):
-    """Linear autoencoder, no bias, optional hidden layer."""
+    """Autoencoder without bias: linear, or with a tanh hidden layer of
+    width `hidden_dim` on each side of the code when it is set."""
 
     def __init__(self, input_dim=32, code_dim=4, hidden_dim=None):
         super().__init__()
