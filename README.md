@@ -13,7 +13,8 @@ This repo is the curriculum as runnable scripts: circuit basics
 quantum kernel (`tier2/`), and a 4-qubit, 16-parameter quantum
 autoencoder (QAE) trained on H₂ ground states (`tier3/`). CI runs every
 week script. The numbers below are what the scripts print with the
-pinned `requirements.txt` on Python 3.11; the tier 3 capstone reruns
+pinned `requirements.txt` on Python 3.11; ± is the population standard
+deviation across seeds (numpy's default, ddof = 0). The tier 3 capstone reruns
 weeks 23-26 and writes the QAE and classical-AE rows to
 `tier3/week27_summary.csv` and `tier3/week27_results.png`.
 
@@ -29,10 +30,11 @@ weeks 23-26 and writes the QAE and classical-AE rows to
 Three caveats. The 22 H₂ states span only a 2-D subspace, so the linear
 AE reconstructs them exactly and the QAE cannot beat it. Neither
 classical AE is parameter-matched to the QAE's 16 parameters, and the
-QAE and the 136-parameter AE tie within one standard deviation; the
+QAE and the 136-parameter AE tie within one standard deviation; the only
 parameter-matched comparison in this repo is tier 2 week 17, where a
-13-parameter MLP beats a 13-parameter hybrid by 2 pp (0.943 vs 0.923
-mean test accuracy). In week 23, seeds 1 and 2 stop in a local minimum
+13-parameter MLP edges out a 13-parameter hybrid by 2 pp (0.943 vs 0.923
+mean test accuracy), within seed noise (3 seeds, 20 test examples, where
+one example is 5 pp). In week 23, seeds 1 and 2 stop in a local minimum
 near 0.956, which misses my pre-registered std < 0.02 gate; the script
 reports the miss rather than failing. `TIER3_REVIEW.md` has the full
 writeup.
@@ -64,7 +66,7 @@ pip install -r requirements.txt   # pinned; tested on Python 3.11
 ## How to use this repo
 
 Each tier grows its own directory (`tier1/`, `tier2/`, `tier3/`) as I work
-through it. Every commit is one runnable notebook or script — a checkpoint,
+through it. Each week is one runnable script plus notes: a checkpoint,
 not a proof. The roadmap below is the spine; the linked resources are the
 muscle.
 
