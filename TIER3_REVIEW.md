@@ -99,13 +99,17 @@ downstream computation that fed the decoded state into another circuit.
 
 Interpreting the slope: the decline flattens as $p$ grows (about 23
 fidelity per unit $p$ near $p = 0$, about 13 between $p = 0.01$ and
-$0.02$) and stays milder than a naive exponential, which is consistent with
-the depolarizing channel's contribution to expectation values for
-shallow circuits ($\langle O\rangle \to (1-p)^{n_g} \langle O\rangle$
-with $n_g \approx 30$ gates would give a steeper curve; the milder
-slope here reflects the trash-fidelity cost function being dominated by
-stochastic projection onto $\ket{0}^{\text{trash}}$ rather than the
-full state).
+$0.02$). Part of that is a floor: as the noise grows the trash register
+tends to the maximally mixed state, so $P(\text{trash} = 00)$ decays
+toward $1/4$, not toward 0. With that floor,
+$F(p) = 1/4 + (F(0) - 1/4)(1 - p)^n$ gives, for each noisy point in the
+table, $n = \ln[(F(p) - 1/4)/(F(0) - 1/4)] / \ln(1 - p)$ = 32, 30, 26
+and 26 at $p$ = 0.001, 0.005, 0.01 and 0.02. So the curve is consistent
+with a plain exponential in about 26 to 32 channels. The circuit inserts
+40 depolarizing channels (in each of the 4 layers, one after each of the
+4 RY gates and two after each of the 3 CNOTs), and the model is
+retrained at each $p$, so this is a consistency check, not a model of
+the mechanism.
 
 ## 2. Where barren plateaus showed up — and where they didn't
 
