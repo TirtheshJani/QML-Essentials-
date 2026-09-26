@@ -69,5 +69,5 @@ The script ends with a five-line tier 2 summary, expanded in `TIER2_REVIEW.md`:
 ## 8. What was *not* attempted
 
 - Multi-class classification (digits 0–9). Would need a one-vs-rest or amplitude-coded readout; out of scope for binary tier 2.
-- Robustness to label noise. The capstone is on clean labels; quantum kernels' robustness story (Suzuki et al. 2024) belongs in tier 3.
+- Robustness to label noise. The capstone is on clean labels; that belongs in tier 3.
 - Hardware execution. Everything here ran on `default.qubit`; running the same circuits on a real backend with shot noise is the natural tier 3 escalation.

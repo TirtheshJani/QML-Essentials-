@@ -59,11 +59,10 @@ A factor of **~1800×** between them, with the quantum side losing on accuracy i
 
 ## 5. What would change the verdict
 
-Schuld, *Supervised quantum machine learning models are kernel methods*, arXiv:2101.11020 (2021), makes the equivalence formal: any variational quantum classifier *is* a kernel method with the embedding's induced kernel. The question is therefore not "should I use a quantum kernel?" but "**does my data live in a structure this particular embedding represents well?**" Iris does not. Datasets where quantum kernels have been published as competitive include:
+Schuld, *Supervised quantum machine learning models are kernel methods*, arXiv:2101.11020 (2021), makes the equivalence formal: any variational quantum classifier *is* a kernel method with the embedding's induced kernel. The question is therefore not "should I use a quantum kernel?" but "**does my data live in a structure this particular embedding represents well?**" Iris does not. Settings where quantum models have been published as competitive include:
 
-- **Quantum-generated data** (Huang et al. 2021, *Nat. Commun.*): synthetic labels engineered from a quantum process. The kernel is then optimal by construction.
-- **Datasets with explicit graph or sequence structure** for which an encoding can be designed (Skolik et al. 2023). Generic tabular data lacks such structure.
-- **Hardware noise as inductive bias** (Suzuki et al. 2024, preliminary): noisy quantum kernels sometimes regularize better than noiseless ones.
+- **Engineered quantum data** (Huang et al., *Power of data in quantum machine learning*, Nat. Commun. 12, 2631 (2021), DOI 10.1038/s41467-021-22539-9): datasets built so that a projected quantum kernel's geometry differs from the classical kernels', where the quantum kernel predicts better. The same paper shows classical models trained on data are often competitive otherwise.
+- **Datasets with explicit graph structure** for which an encoding can be designed to respect the graph's symmetries (Skolik et al., *Equivariant quantum circuits for learning on weighted graphs*, npj Quantum Inf. 9, 47 (2023), DOI 10.1038/s41534-023-00710-y; a variational model rather than a kernel). Generic tabular data lacks such structure.
 
 None of these conditions hold for the Iris benchmark. The honest record stays.
 
