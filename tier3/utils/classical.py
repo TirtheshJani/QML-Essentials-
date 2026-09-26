@@ -47,7 +47,9 @@ def states_to_real(states):
 def real_to_states(reals):
     """Inverse of `states_to_real`. Reconstructs `(k, 16)` complex array,
     L2-normalized so each row is a valid quantum state."""
-    reals = np.asarray(reals)
+    # float64: normalizing the float32 model output in single precision
+    # leaves fidelities up to ~2e-7 above 1 for a perfect reconstruction.
+    reals = np.asarray(reals, dtype=np.float64)
     half = reals.shape[1] // 2
     z = reals[:, :half] + 1j * reals[:, half:]
     norms = np.linalg.norm(z, axis=1, keepdims=True)
