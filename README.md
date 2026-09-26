@@ -1,8 +1,51 @@
 # QML-Essentials
 
+[![CI](https://github.com/TirtheshJani/QML-Essentials-/actions/workflows/ci.yml/badge.svg)](https://github.com/TirtheshJani/QML-Essentials-/actions/workflows/ci.yml)
+
 A self-paced Quantum Machine Learning curriculum for someone with a strong
 classical ML and physics background, new to quantum computing. Realistic
 target: ~5–6 months to genuine fluency at 5–7 hrs/week.
+
+## For reviewers
+
+This repo is the curriculum as runnable scripts: circuit basics
+(`tier1/`), core QML with VQE, QAOA, a variational classifier and a
+quantum kernel (`tier2/`), and a 4-qubit, 16-parameter quantum
+autoencoder (QAE) trained on H₂ ground states (`tier3/`). CI runs every
+week script. The numbers below are what the scripts print with the
+pinned `requirements.txt` on Python 3.11; the tier 3 capstone reruns
+weeks 23-26 and writes the QAE and classical-AE rows to
+`tier3/week27_summary.csv` and `tier3/week27_results.png`.
+
+| tier 3 result (test = 11 held-out bond lengths) | value |
+|------|------:|
+| QAE local fidelity, all 22 states, 5 seeds (week 23) | 0.9825 ± 0.0214 |
+| QAE test reconstruction fidelity, 5 seeds (week 24) | 0.9871 ± 0.0258 |
+| Spearman(r, latent PC1), seed 0 (week 24) | -1.000 |
+| QAE test local fidelity at depolarizing p = 0.005, 3 seeds (week 25) | 0.8707 ± 0.0090 (random encoder 0.1952) |
+| Linear classical AE, 256 params, test reconstruction (week 26) | 1.0000 ± 0.0000 |
+| Nonlinear classical AE, 136 params, test reconstruction (week 26) | 0.9811 ± 0.0211 |
+
+Three caveats. The 22 H₂ states span only a 2-D subspace, so the linear
+AE reconstructs them exactly and the QAE cannot beat it. Neither
+classical AE is parameter-matched to the QAE's 16 parameters, and the
+QAE and the 136-parameter AE tie within one standard deviation; the
+parameter-matched comparison in this repo is tier 2 week 17, where a
+13-parameter MLP beats a 13-parameter hybrid by 2 pp (0.943 vs 0.923
+mean test accuracy). In week 23, seeds 1 and 2 stop in a local minimum
+near 0.956, which misses my pre-registered std < 0.02 gate; the script
+reports the miss rather than failing. `TIER3_REVIEW.md` has the full
+writeup.
+
+To reproduce tier 3 in one script (about 22 minutes on 4 CPU cores):
+
+```bash
+python3.11 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python tier3/week27_capstone.py
+```
+
+The loop under "Repo evolution" below runs every week script.
 
 ## Frameworks
 
@@ -15,7 +58,7 @@ target: ~5–6 months to genuine fluency at 5–7 hrs/week.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install pennylane qiskit qiskit-machine-learning numpy matplotlib torch
+pip install -r requirements.txt   # pinned; tested on Python 3.11
 ```
 
 ## How to use this repo
@@ -119,8 +162,9 @@ noise; sweep $p \in \{0, 10^{-3}, 5\cdot10^{-3}, 10^{-2}, 2\cdot10^{-2}\}$;
 trained-vs-random baseline at every noise level.
 
 ### 3D. Classical autoencoder baselines (week 26) ✓
-Linear AE oracle (256 params) and a parameter-matched nonlinear AE for
-the honest comparison; both reported, neither cherry-picked.
+Linear AE oracle (256 params) and a small nonlinear AE (136 params; the
+closest small classical AE, not an exact match to the QAE's 16) for the
+honest comparison; both reported, neither cherry-picked.
 
 ### Capstone — week 27 ✓
 `tier3/week27_capstone.py` reruns weeks 23–26 in one execution, writes
@@ -171,12 +215,17 @@ tiers:
 - `tier3/` — 6 weeks on the H₂-ground-state quantum autoencoder
   (`TIER3_PLAN.md` → weeks 22–27 → `TIER3_REVIEW.md` → capstone CSV +
   figure).
-- `requirements.txt` covers every tier's deps.
+- `requirements.txt` pins every tier's deps (tested on Python 3.11).
+- `.github/workflows/ci.yml` runs every week script, one job per tier.
 
 Each tier directory holds flat `weekN_<topic>.py` + `weekN_notes.md`
-files plus a `utils/` submodule for shared helpers. Every week is a
-self-checking script: assertion-gated `main()`, exits non-zero if any
-gate fails. From a clean checkout:
+files plus a `utils/` submodule for shared helpers. Every week from
+week 8 on is a self-checking script: assertion-gated `main()`, exits
+non-zero if any gate fails; tier 1 weeks 1-7 are print-only
+walkthroughs that fail only if they crash. One gate is reported rather
+than asserted: week 23's across-seed std gate, which the first full run
+missed, prints `MISSED pre-registered gate` (see
+`tier3/week23_notes.md`). From a clean checkout:
 
 ```bash
 pip install -r requirements.txt
