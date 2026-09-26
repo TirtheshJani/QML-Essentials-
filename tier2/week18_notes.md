@@ -34,7 +34,7 @@ Sanity properties:
 
 Mean within-class similarity is **0.0788**; mean between-class similarity is **0.0733**. The gap is just 0.6 pp. That tiny separation is what the SVM in week 19 has to amplify into a decision boundary. Compare to a trivial RBF kernel on the same standardised features, where within-class fidelity is ~0.6 and between-class ~0.1 — the quantum kernel is *less* discriminative on average.
 
-This is the **kernel concentration** phenomenon (Thanasilp et al. 2024, *Nat. Commun.* 15:5200): for sufficiently expressive feature maps, $K_{ij}$ concentrates around a constant value as $n$ qubits or circuit depth grows, and the SVM is left fitting noise. The harder Iris pair (1 vs 2) shows it more starkly — `reps=2` there gives within − between = $-0.0001$, *negative*. Week 20 sweeps `reps ∈ {1, 2, 3}` and watches concentration tighten in real time.
+This looks like the **kernel concentration** phenomenon (Thanasilp et al., *Nat. Commun.* 15 (2024), DOI 10.1038/s41467-024-49287-w): for sufficiently expressive feature maps, $K_{ij}$ concentrates around a constant value, exponentially in the number of qubits $n$, and the SVM is left fitting noise. The harder Iris pair (1 vs 2) shows it more starkly — `reps=2` there gives within − between = $-0.0001$, *negative*. Week 20 sweeps `reps ∈ {1, 2, 3}` and prints the Gram matrix's off-diagonal spread at each depth; at 4 qubits its post-hoc control finds that the input scale matters more (week 20 notes, section 3).
 
 ## 5. ASCII heat-map reading
 
