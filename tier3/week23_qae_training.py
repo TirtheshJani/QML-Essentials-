@@ -149,14 +149,19 @@ def main():
     assert f_local_mu > 0.95, \
         f"mean local fidelity {f_local_mu:.4f} below 0.95 target"
     # Pre-registered gate (TIER3_PLAN.md): std across seeds < 0.02. The first
-    # full run missed it (std 0.0214): seeds 1 and 2 stop in a local minimum
-    # near 0.956 while seeds 0, 3 and 4 reach 1.0000. It is reported rather
-    # than asserted so the miss stays visible instead of moving the threshold.
+    # full run missed it (std 0.0214): seed 2 stops at a stationary point
+    # near 0.955 and seed 1 is still on a slow plateau at epoch 200, while
+    # seeds 0, 3 and 4 reach 1.0000. It is reported rather than asserted so
+    # the miss stays visible instead of moving the threshold.
     if f_local_sd >= 0.02:
         print(f"  MISSED pre-registered gate: std across seeds "
               f"{f_local_sd:.4f} >= 0.02 (see week23_notes.md)")
     assert f_recon_mu > 0.93, \
         f"mean reconstruction fidelity {f_recon_mu:.4f} below 0.93"
+    # This gate passes while some seeds are still moving (seeds 0 and 1 in
+    # the first full run); a run where every seed converged would fail it.
+    # So it is not evidence against a plateau (the init-gradient gate below
+    # is). Kept because it was fixed before the first full run.
     assert gN_mu > 1e-3, \
         f"final gradient norm {gN_mu:.2e} suggests we slid into the plateau"
     assert g0_mu > 0.3, \

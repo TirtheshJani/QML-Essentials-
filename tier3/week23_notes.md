@@ -70,10 +70,13 @@ epoch 0 is 0.28 to 0.51 (mean 0.44), lower than the ~1.3 estimate above
 but still plateau-free. At the last epoch the per-seed norms are 0.0015,
 0.0100, 0.0000, 0.0001 and 0.0001 (seeds 0 to 4), so seeds 2, 3 and 4
 do end below $10^{-3}$. They are converged, not stalled at init: seeds 3
-and 4 sit at the global minimum (local fidelity 1.0000) and seed 2 in the
-local minimum described below. The assertion is on the 5-seed mean
-(0.0023), which stays above $10^{-3}$ mainly because seed 1 is still
-moving.
+and 4 sit at the global minimum (local fidelity 1.0000) and seed 2 at
+the stationary point described below. The assertion is on the 5-seed
+mean (0.0023), which stays above $10^{-3}$ because seeds 0 (0.0015) and
+1 (0.0100) have not converged. A run in which every seed converged would
+fail it, so passing it is not evidence against a plateau; the
+init-gradient gate is. The gate is kept because it was fixed before the
+first full run.
 
 ## Reproducibility
 
@@ -92,8 +95,11 @@ to pass.
 
 **Result of the first full run: four of five.** Mean local fidelity is
 0.9825 ± 0.0214 and mean reconstruction fidelity 0.9719 ± 0.0349. Seeds
-0, 3 and 4 reach local fidelity 1.0000; seeds 1 and 2 stop in a local
-minimum at 0.9576 and 0.9551. That spread puts the std at 0.0214, which
+0, 3 and 4 reach local fidelity 1.0000. Seed 2 stops at a stationary
+point at 0.9551 (gradient norm 0.0000). Seed 1 is at 0.9576 and still on
+a slow plateau when training ends at epoch 200 (gradient norm 0.010);
+seed 0 sat on the same plateau until about epoch 130
+(`week23_loss_curves.png`). That spread puts the std at 0.0214, which
 misses the pre-registered std < 0.02 gate. The same two seeds give the
 same values under PennyLane 0.44.1, so this is not library drift. The
 script now prints the miss as `MISSED pre-registered gate` instead of

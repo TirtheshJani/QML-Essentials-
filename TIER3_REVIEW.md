@@ -38,8 +38,11 @@ print with the pinned `requirements.txt`:
 
 The 16-parameter, depth-4 RY+CNOT encoder (twice the 8 quantum weights
 of the Tier 2 week 21 block) reaches local fidelity 1.0000 on seeds 0, 3
-and 4 in week 23. Seeds 1 and 2 stop in a local minimum (0.9576 and
-0.9551), which puts the across-seed std at 0.0214 and misses the
+and 4 in week 23. Seed 2 stops at a stationary point at 0.9551
+(gradient norm 0.0000 at the last epoch). Seed 1 (0.9576) is still on a
+slow plateau at epoch 200 (gradient norm 0.010), the plateau near cost
+0.04 that seed 0 left at about epoch 130 (`tier3/week23_loss_curves.png`).
+Together they put the across-seed std at 0.0214, which misses the
 pre-registered std < 0.02 gate; the script reports the miss rather than
 hiding it (`tier3/week23_notes.md`). The held-out gate passes: in week
 24, four seeds reconstruct the unseen bond lengths at 1.0000 and seed 2
@@ -114,7 +117,7 @@ epochs 0, 50, 100, 150 and 199 in week 23 (0 and 199 in weeks 24 and
 | location | observation |
 |------|------|
 | init, $n=4$, $L=4$ | $\|\nabla C\|_2 = 0.44$ (5-seed mean, range 0.28 to 0.51), well above the plateau |
-| training, week 23 | the 5-seed mean fell from 0.44 to $2.3 \times 10^{-3}$; seeds 2, 3 and 4 end below $10^{-3}$ because they converged (two at local fidelity 1.0000, one in the 0.955 local minimum), not because they stalled |
+| training, week 23 | the 5-seed mean fell from 0.44 to $2.3 \times 10^{-3}$; seeds 2, 3 and 4 end below $10^{-3}$ because they converged (two at local fidelity 1.0000, one at a stationary point at 0.955), not because they stalled |
 | under noise | not measured: the week 25 and week 27 noise runs do not log gradient norms |
 
 In short: the choice of $n_{\text{qubits}} = 4$ and $L = 4$ from the
@@ -276,7 +279,12 @@ fidelity > 0.85 at $p = 0.005$ and monotone decay in $p$; the script
 also requires more than 30 pp over random encoders at $p = 0.005$).
 Two other checks could not: 999 of 1000 untrained encoders pass the
 week-24 Spearman gate (§1.2), and week 26's pre-registered criterion
-was only that the head-to-head table exists.
+was only that the head-to-head table exists. Week 23's final-gradient
+gate (5-seed mean norm > $10^{-3}$) is no evidence against a plateau
+either: a converged run has near-zero gradient, and the gate passes
+(mean 0.0023) because seeds 0 and 1 have not converged. It stays in
+the script because it was fixed before the first run; the
+barren-plateau evidence is the init-gradient gate (0.44 > 0.3).
 The week-24 held-out split is weaker than it looks as well, since on
 this dataset held-out fidelity follows from training fidelity (§1.1).
 One pre-registered gate did fail: week 23's across-seed std

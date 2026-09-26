@@ -38,8 +38,9 @@ QAE and the 136-parameter AE tie within one standard deviation; the only
 parameter-matched comparison in this repo is tier 2 week 17, where a
 13-parameter MLP edges out a 13-parameter hybrid by 2 pp (0.943 vs 0.923
 mean test accuracy), within seed noise (3 seeds, 20 test examples, where
-one example is 5 pp). In week 23, seeds 1 and 2 stop in a local minimum
-near 0.956, which misses my pre-registered std < 0.02 gate; the script
+one example is 5 pp). In week 23, seed 2 stops at a stationary point at
+0.955 and seed 1 (0.958) is still on a slow plateau when training ends
+at epoch 200, which misses my pre-registered std < 0.02 gate; the script
 reports the miss rather than failing. `TIER3_REVIEW.md` has the full
 writeup.
 
