@@ -168,12 +168,13 @@ Week 26, same train/test split, 5 seeds:
 Three honest readings of this table:
 
 - **The linear AE wins decisively, but it's an oracle.** The H₂
-  ground-state manifold is a linear subspace by construction (the
-  Hamiltonian is parameterized by $r$ and the ground state is an
-  eigenvector of a continuously-varying matrix; a low-rank subspace
-  approximation is the right classical tool). You can't beat an oracle
-  with a model that doesn't know the geometry; you can only match it.
-  At 256 parameters the linear AE essentially *is* the SVD.
+  ground-state manifold is a 2-D linear subspace by symmetry (the
+  Hamiltonian conserves particle number and spin, and the bonding and
+  antibonding orbitals have opposite parity, so at every $r$ only
+  $\ket{1100}$ and $\ket{0011}$ are in the ground state's sector; a
+  low-rank subspace approximation is the right classical tool). You
+  can't beat an oracle with a model that doesn't know the geometry; you
+  can only match it. At 256 parameters the linear AE essentially *is* the SVD.
 
 - **The QAE and the small nonlinear classical AE tie.** The QAE is
   ahead by 0.6 pp (0.9871 vs 0.9811), well inside one standard
@@ -210,8 +211,8 @@ In rough order of expected impact:
 
 1. **Move to real hardware.** Tier 2 review item 2 carried over to
    Tier 3 (we hit `default.mixed`, but not IBM). The next step is to
-   run a *trained* QAE on actual `ibm_kyoto` or a current device's
-   free tier, with a SWAP-test ancilla for fidelity measurement. The
+   run a *trained* QAE on a current IBM device's free tier, with a
+   SWAP-test ancilla for fidelity measurement. The
    noise model used here (uniform per-gate depolarizing) is the
    simplest plausible — real devices have correlated, non-Markovian,
    and gate-specific errors that this sweep doesn't capture.
@@ -263,7 +264,7 @@ In rough order of expected impact:
 
 ## 5. Cross-tier reflection
 
-Three tiers, ~21 weeks of sustained effort, one sentence of summary
+Three tiers, 27 weeks of sustained effort, one sentence of summary
 each:
 
 - **Tier 1**: read a quantum circuit fluently — gates, Bell, Grover,
