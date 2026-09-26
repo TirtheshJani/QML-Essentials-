@@ -14,8 +14,8 @@ quantum kernel (`tier2/`), and a 4-qubit, 16-parameter quantum
 autoencoder (QAE) trained on H₂ ground states (`tier3/`). CI runs every
 week script. The numbers below are what the scripts print with the
 pinned `requirements.txt` on Python 3.11; ± is the population standard
-deviation across seeds (numpy's default, ddof = 0). The tier 3 capstone reruns
-weeks 23-26 and writes the QAE and classical-AE rows to
+deviation across seeds (numpy's default, ddof = 0). The tier 3 capstone
+reruns weeks 23-26 and writes the QAE and classical-AE rows to
 `tier3/week27_summary.csv` and `tier3/week27_results.png`.
 
 | tier 3 result (test = 11 held-out bond lengths) | value |
@@ -28,8 +28,8 @@ weeks 23-26 and writes the QAE and classical-AE rows to
 | Nonlinear classical AE, 136 params, test reconstruction (week 26) | 0.9811 ± 0.0211 |
 
 Four caveats. The 22 H₂ states span only a 2-D subspace, so the linear
-AE reconstructs them exactly and the QAE cannot beat it. For the same
-reason the Spearman row is a property of the data, not of training
+AE reconstructs them exactly and the QAE cannot beat it. Because of that
+geometry the Spearman row is a property of the data, not of training
 (every state is cos t|1100⟩ + sin t|0011⟩, and 999 of 1000 untrained
 encoders also pass the |ρ| > 0.9 gate), and the held-out split tests
 interpolation along the curve, not generalization. Neither
@@ -172,9 +172,9 @@ noise; sweep $p \in \{0, 10^{-3}, 5\cdot10^{-3}, 10^{-2}, 2\cdot10^{-2}\}$;
 trained QAE (3 seeds) vs 20 seeded random encoders at every noise level.
 
 ### 3D. Classical autoencoder baselines (week 26) ✓
-Linear AE oracle (256 params) and a small nonlinear AE (136 params; the
-closest small classical AE, not an exact match to the QAE's 16) for the
-honest comparison; both reported, neither cherry-picked.
+Linear AE oracle (256 params) and a small nonlinear AE (136 params; not
+parameter-matched to the QAE's 16) for the honest comparison; both
+reported, neither cherry-picked.
 
 ### Capstone — week 27 ✓
 `tier3/week27_capstone.py` reruns weeks 23–26 in one execution, writes
