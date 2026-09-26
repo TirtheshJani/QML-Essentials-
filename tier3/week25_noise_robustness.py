@@ -4,8 +4,8 @@ Tier 2 review item 2: 'move from default.qubit to a real backend.' We
 switch to PennyLane's density-matrix simulator default.mixed and inject a
 DepolarizingChannel after every parameterized gate, sweeping noise rate
 p in {0.0, 0.001, 0.005, 0.01, 0.02}. At each p we train the QAE for 100
-epochs and report the test reconstruction fidelity (Uhlmann form, since
-the output is now mixed) on the held-out half of the H2 dataset.
+epochs and report the test local fidelity P(trash = 00), i.e. 1 minus the
+noise-aware Romero cost, on the held-out half of the H2 dataset.
 
 Reference baseline: a 'random encoder' (untrained parameters) at the
 same noise level. This shows that what we measure is the *noise tax* on
