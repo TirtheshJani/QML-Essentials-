@@ -27,15 +27,15 @@ QAOA worked, then concentrated. On a fixed 6-node 3-regular graph:
 | 2 | 0.94 |
 | 3 | 0.98 |
 
-Goemans–Williamson's worst-case classical guarantee is 0.878. QAOA at $p = 3$ exceeds it on this instance. **But:** the same instance never gets larger than 6 nodes here. Week 14's barren-plateau probe on a wider hardware-efficient ansatz showed gradient variance halving every ~1.7 added qubits — by 10 qubits, gradients are ~10× smaller than at 4. Scaling QAOA past tens of qubits is gated by the same problem.
+$\rho$ is QAOA's expected cut divided by the optimum $C^* = 7$, which week 13 finds by brute force over all $2^6 = 64$ cuts. That brute-force search is an exact classical solve of this instance ($\rho = 1$). Goemans–Williamson's 0.878 is a worst-case guarantee over all graphs, so QAOA's 0.98 on one instance exceeding it is not a head-to-head comparison. **But:** the same instance never gets larger than 6 nodes here. Week 14's barren-plateau probe on a wider hardware-efficient ansatz showed gradient variance halving every ~1.7 added qubits — by 10 qubits, gradients are ~10× smaller than at 4. Scaling QAOA past tens of qubits is gated by the same problem.
 
 ### 2C — Variational classifier on Iris (weeks 15–17)
 
 Three results, all instructive:
 
 - **Encoding choice dominated.** On Iris-1-vs-2, *angle* hit 100 %, *amplitude* hit 30 %, IQP hit 75 % (week 15). The classical no-free-lunch lesson, restated: a feature map is a hypothesis class, and choosing the wrong one is unrecoverable downstream.
-- **Hybrid > linear, by a small margin.** A 13-parameter `TorchLayer + Linear` model reached 100 % vs a 5-parameter single `nn.Linear` baseline at 95 % (week 16). Quantum non-linearity contributes, but cheaply.
-- **Hybrid ≤ matched-param classical MLP.** A 13-parameter 4-2-1 ReLU MLP trained under identical protocol won 3 of 5 sample-size cells (week 17). Mean test accuracy across the sweep: hybrid 0.923, MLP 0.943. **−2 pp gap in favor of classical.**
+- **Hybrid ahead of linear by one test example.** A 13-parameter `TorchLayer + Linear` model reached 100 % vs a 5-parameter single `nn.Linear` baseline at 95 % (week 16). That is one test example of 20 from a single seed, so it is within noise.
+- **Hybrid ≤ matched-param classical MLP.** A 13-parameter 4-2-1 ReLU MLP trained under identical protocol won 3 of 5 sample-size cells (week 17). Mean test accuracy across the sweep: hybrid 0.923, MLP 0.943. **−2 pp gap in favor of classical**, within seed noise (3 seeds, a 20-example test set where one example is 5 pp).
 
 The variational quantum classifier's competitive niche on a tabular dataset like Iris does not exist at this scale.
 
@@ -75,19 +75,19 @@ The barren plateau was not an obstacle in tier 2 because tier 2 was deliberately
 
 ## 3. Win/loss/tie ledger vs classical baselines
 
-| sub-project | quantum metric | matched classical | verdict |
+| sub-project | quantum metric | classical baseline | verdict |
 |------|------:|------:|------|
 | 2A VQE on H₂ | 0.001 mHa from FCI | exact diag at $n=4$ is FCI itself | **tied (both exact)** |
-| 2B QAOA $p=3$ | $\rho = 0.98$ | Goemans-Williamson $\rho \ge 0.878$ worst case | **quantum wins** |
-| 2C variational classifier (week 16) | 1.00 test on Iris-1-vs-2 | single `nn.Linear` 0.95 | **quantum wins +5 pp** |
-| 2C param-matched (week 17) | 0.92 mean across n_train | 4-2-1 MLP at 0.94 mean | **classical wins −2 pp** |
+| 2B QAOA $p=3$ | $\rho = 0.98$ (expected cut / optimum) | brute force over 64 cuts, exact ($\rho = 1$) | **classical exact; GW's 0.878 worst-case bound is not a head-to-head** |
+| 2C variational classifier (week 16) | 1.00 test on Iris-1-vs-2 | single `nn.Linear` 0.95 | **hybrid +5 pp: one test example of 20, single seed, within noise** |
+| 2C param-matched (week 17) | 0.92 mean across n_train | 4-2-1 MLP at 0.94 mean | **classical +2 pp, within seed noise (3 seeds)** |
 | 2D quantum kernel (week 19) | 0.70 CV / 0.70 test | RBF 1.00 / 1.00 | **classical wins −30 pp** |
 | 2D wider sweep (week 20) | 0.74 mean across 9 cells | RBF 1.00 | **classical wins, 0/9 cells** |
 | Capstone (week 21) | 0.986 on digits-0-vs-1 | not computed; would be ~1.0 for sklearn LogReg | **likely tied, capstone strength is the architecture** |
 
-**Net:** quantum wins 2 of 7 head-to-heads — both on quantum-structured problems (2A, 2B). Classical wins on every tabular data task (2C param-matched, 2D both subprojects). The pattern matches the Schuld 2021 / Huang et al. 2021 theoretical line: quantum models compete only on data with structure their encoding actually represents.
+**Net:** no clear quantum win in the 7 rows. 2A is a tie (both exact). In 2B the brute-force classical solve is exact on this 6-node instance, and QAOA's 0.98 is measured against it. The two 2C rows differ by one test example from one seed (week 16) or by 2 pp within seed noise (week 17). Classical wins clearly on the kernel task (2D, both rows), and the capstone has no classical run. The pattern matches the Schuld 2021 / Huang et al. 2021 theoretical line: quantum models compete only on data with structure their encoding actually represents.
 
-The two "wins" are also the two cases where the *classical baseline is itself a quantum or quantum-adjacent algorithm*: VQE's ground-truth reference is full quantum-state diagonalization; QAOA's classical bound is Goemans-Williamson, which uses an SDP relaxation that's polynomial but expensive at scale.
+The two quantum-structured rows (2A, 2B) are also the two where the classical reference is exact at this size: VQE is checked against exact diagonalization (FCI), and QAOA against a brute-force optimum. Neither is a quantum win; both show the quantum method reaching (2A) or approaching (2B) a classical answer that is cheap to compute on 4 or 6 qubits.
 
 ## 4. What I'd change before tier 3
 
