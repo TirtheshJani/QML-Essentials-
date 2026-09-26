@@ -306,8 +306,10 @@ def main():
     ax.set_ylim(0.0, 1.05)
     ax.set_ylabel("test reconstruction fidelity")
     ax.set_title("(d) head-to-head: 5-seed mean +/- std")
-    for i, (mu, sd) in enumerate(zip(bar_means, bar_sds)):
-        ax.text(i, mu + sd + 0.02, f"{mu:.3f}", ha="center", fontsize=9)
+    # Value labels inside the bars, clear of the error bars and the title.
+    for i, mu in enumerate(bar_means):
+        ax.text(i, mu / 2, f"{mu:.3f}", ha="center", va="center",
+                fontsize=9, color="white", fontweight="bold")
 
     fig.suptitle("Tier 3 capstone: quantum autoencoder on H2 ground states",
                  fontsize=12)
