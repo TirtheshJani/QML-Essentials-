@@ -168,7 +168,7 @@ def main():
                      f"{train_loc_full.mean():.4f}",
                      f"{train_loc_full.std():.4f}", len(SEEDS)))
 
-    section("2. Week 24 - generalization on train/test split")
+    section("2. Week 24 - held-out (interpolation) train/test split")
     qae_train_rec = np.empty(len(SEEDS))
     qae_test_rec = np.empty(len(SEEDS))
     qae_test_loc = np.empty(len(SEEDS))

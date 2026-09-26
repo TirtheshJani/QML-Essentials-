@@ -1,7 +1,8 @@
 # Tier 3 Review — Quantum Autoencoder for H₂ Ground States
 
 Tier 3 (weeks 22–27) trained a 4-qubit quantum autoencoder on a 1-parameter
-family of H₂/STO-3G ground states, evaluated generalization, swept
+family of H₂/STO-3G ground states, evaluated it on a held-out split (which
+here tests interpolation), swept
 depolarizing noise on `default.mixed`, and compared head-to-head against
 two classical autoencoder baselines. Every weekly script is assertion-gated
 (week 23 reports one missed gate instead of failing, see §1.1)
@@ -32,7 +33,7 @@ print with the pinned `requirements.txt`:
 | training local fidelity (full curve, week 23) | **0.9825 ± 0.0214** |
 | training reconstruction fidelity (full curve, week 23) | **0.9719 ± 0.0349** |
 | held-out test reconstruction fidelity (week 24) | **0.9871 ± 0.0258** |
-| generalization gap (recon, train − test, week 24) | **+0.05 pp** |
+| held-out (interpolation) gap (recon, train − test, week 24) | **+0.05 pp** |
 | init gradient norm $\|\nabla C\|_2$ (week 23) | 0.44 |
 | final gradient norm $\|\nabla C\|_2$ (week 23) | 2.3 × 10⁻³ |
 
@@ -50,7 +51,8 @@ at 0.9355. On this 2-D linear dataset that is interpolation, not
 generalization: the 11 training states span the subspace that holds the
 test states, and there both fidelities are fixed polynomials of the
 state, so held-out fidelity follows from training fidelity for any
-encoder. Reconstruction fidelity in week 23 is 1.1 pp below local
+encoder. That includes $r = 2.5$, the one test bond length just outside
+the training range (which ends at 2.4). Reconstruction fidelity in week 23 is 1.1 pp below local
 (trash) fidelity (0.9719 vs 0.9825). That closeness is guaranteed, not
 found: for a pure input, $F_{\text{loc}}^2 \le F_{\text{recon}} \le
 F_{\text{loc}}$ (`tier3/check_qae_bounds.py`), so high trash fidelity

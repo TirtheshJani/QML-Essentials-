@@ -116,5 +116,6 @@ threshold was not moved.
 
 A *trained* QAE — specifically, the parameter array $\boldsymbol\alpha^*$
 from the seed-0 run. Week 24 splits the dataset (train on every other
-$r$, test on the remaining 11 $r$ values) to test generalization, and
+$r$, test on the remaining 11 $r$ values) as a held-out test (on this
+dataset it tests interpolation), and
 adds the latent-trajectory visualization on the code qubits.

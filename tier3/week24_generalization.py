@@ -1,4 +1,4 @@
-"""Week 24 - Generalization and latent-space geometry.
+"""Week 24 - Held-out split (interpolation) and latent-space geometry.
 
 Splits the 22-state H2 dataset into 11 train + 11 test (every other r),
 retrains the QAE on the train half, evaluates on the held-out half, and
@@ -6,6 +6,8 @@ visualizes the latent code: as r varies, the encoded code-qubit reduced
 density matrix sweeps out a smooth trajectory. We report the Spearman
 rank correlation between r and the leading PCA axis of those points,
 next to a control: the same statistic for untrained random encoders.
+On this 2-D dataset the held-out split tests interpolation, not
+generalization (see week24_notes.md).
 Every state is cos(t)|1100> + sin(t)|0011>, so any encoder maps the
 curve to a smooth arc; the control shows how much of the monotone arc
 is a property of the data rather than of training.
@@ -113,8 +115,8 @@ def main():
 
     gap_loc = train_loc.mean() - test_loc.mean()
     gap_rec = train_rec.mean() - test_rec.mean()
-    print(f"  generalization gap (local): {gap_loc*100:+.2f} pp")
-    print(f"  generalization gap (recon): {gap_rec*100:+.2f} pp")
+    print(f"  held-out (interpolation) gap (local): {gap_loc*100:+.2f} pp")
+    print(f"  held-out (interpolation) gap (recon): {gap_rec*100:+.2f} pp")
 
     section("3. Latent-space trajectory (seed = 0 model, all 22 states)")
     feats = code_bloch_vectors(states, seed0_U)
@@ -175,7 +177,7 @@ def main():
     assert test_rec.mean() > 0.85, \
         f"test recon fid {test_rec.mean():.4f} < 0.85"
     assert gap_loc < 0.10, \
-        f"generalization gap {gap_loc:.4f} > 0.10 (overfitting)"
+        f"held-out gap {gap_loc:.4f} > 0.10"
     # Pre-registered gate. Section 3b shows untrained encoders pass it too,
     # so it checks the latent pipeline, not what training learned.
     assert abs(rho_pc1) > 0.9, \

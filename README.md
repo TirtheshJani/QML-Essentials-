@@ -32,7 +32,8 @@ AE reconstructs them exactly and the QAE cannot beat it. Because of that
 geometry the Spearman row is a property of the data, not of training
 (every state is cos t|1100⟩ + sin t|0011⟩, and 999 of 1000 untrained
 encoders also pass the |ρ| > 0.9 gate), and the held-out split tests
-interpolation along the curve, not generalization. Neither
+interpolation, not generalization (the training fidelities fix the
+held-out ones, including at r = 2.5, just outside the training range). Neither
 classical AE is parameter-matched to the QAE's 16 parameters, and the
 QAE and the 136-parameter AE tie within one standard deviation; the only
 parameter-matched comparison in this repo is tier 2 week 17, where a
@@ -159,7 +160,7 @@ on the H₂ ground-state manifold from the Tier 2 VQE pipeline. Detail in
 Build the H₂ ground-state dataset, partial-trace utilities, and the
 fidelity / Uhlmann-fidelity helpers (`tier3/utils/states.py`).
 
-### 3B. QAE training + generalization (weeks 23–24) ✓
+### 3B. QAE training + held-out interpolation (weeks 23–24) ✓
 4-qubit, 16-parameter, depth-4 RY+CNOT encoder trained on the Romero
 trash-fidelity cost (a global cost in the terminology of
 [Cerezo et al. 2021](https://doi.org/10.1038/s41467-021-21728-w));

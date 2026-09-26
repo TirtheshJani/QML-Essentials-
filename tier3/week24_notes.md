@@ -1,4 +1,4 @@
-# Week 24 — Generalization and Latent Geometry
+# Week 24 — Held-out Split (Interpolation) and Latent Geometry
 
 ## What changed from week 23
 
@@ -9,13 +9,15 @@ possible "is the QAE doing more than memorizing the training set?" test.
 
 On this dataset it tests interpolation, not generalization. The 11
 training states already span the 2-D subspace that holds the 11 test
-states (which sit between them on the same curve), and on that real
+states (on the same curve: 10 of them sit between training bond lengths,
+and $r = 2.5$ is just outside the training range, which ends at 2.4),
+and on that real
 subspace both fidelities are fixed polynomials of the state (quadratic
 for local fidelity, quartic for reconstruction fidelity). So for any
-encoder the training fidelities determine the held-out ones, and a small
-gap is expected by construction.
+encoder the training fidelities determine the held-out ones, including
+at $r = 2.5$, and a small gap is expected by construction.
 
-## Generalization metric
+## Held-out metric
 
 Two numbers, each averaged over 5 seeds:
 
@@ -26,7 +28,7 @@ Two numbers, each averaged over 5 seeds:
 - **Reconstruction fidelity gap:** same idea but with the full
   $F_{\text{recon}}$ from week 22.
 
-**Pass criterion:** test recon fidelity > 0.85 *and* generalization gap
+**Pass criterion:** test recon fidelity > 0.85 *and* held-out gap
 < 10 pp. Both are required.
 
 ## Latent geometry
