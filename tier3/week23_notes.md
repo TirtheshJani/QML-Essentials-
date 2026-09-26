@@ -54,8 +54,8 @@ numerically (via `tier3.utils.states.reconstruction_fidelity`) on the
 finished encoder. Because of that bound the two can differ by at most
 $F_{\text{loc}}(1 - F_{\text{loc}})$ per state, so comparing them checks
 the code, not the cost.
-The script prints both; the asserted gate is on reconstruction fidelity
-alone (mean > 0.93), and nothing asserts on the gap between the two.
+The script prints both and asserts each (local > 0.95, reconstruction
+> 0.93); nothing asserts on the gap between them.
 
 ## Inline barren-plateau monitoring
 

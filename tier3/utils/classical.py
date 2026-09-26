@@ -14,8 +14,9 @@ Neither is parameter-matched to the QAE's 16 trainable angles
 cannot get that small: 32 -> 1 -> 32 without bias already has 64 weights,
 and a 1-dim code cannot represent the 2-D data subspace exactly.
 
-The classical AE is trained in PyTorch with Adam on MSE loss between
-input and output of the L2-normalized network. After training,
+The classical AE is trained in PyTorch with Adam on the MSE between the
+input and the raw network output (no normalization during training).
+After training,
 reconstruction fidelity = `|<psi_recon | psi>|^2` where `psi_recon` is
 the (re-normalized) reconstructed amplitude vector.
 """

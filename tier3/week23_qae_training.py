@@ -129,7 +129,7 @@ def main():
         print(f"  -> {n_low} of {len(SEEDS)} seeds end with gradient norm below "
               f"1e-3 (per-seed |grad|@end above); the gate is on the mean.")
 
-    section("4. Save loss-curve plot (seed = 0)")
+    section("4. Save loss-curve plot (all seeds)")
     fig, ax = plt.subplots(figsize=(7, 4))
     for seed, h in zip(SEEDS, histories):
         eps = [e[0] for e in h]
