@@ -2,9 +2,8 @@
 
 Tier 3 (weeks 22–27) trained a 4-qubit quantum autoencoder on a 1-parameter
 family of H₂/STO-3G ground states, evaluated it on a held-out split (which
-here tests interpolation), swept
-depolarizing noise on `default.mixed`, and compared head-to-head against
-two classical autoencoder baselines. Every weekly script is assertion-gated
+here tests interpolation), swept depolarizing noise on `default.mixed`,
+and compared head-to-head against two classical autoencoder baselines. Every weekly script is assertion-gated
 (week 23 reports one missed gate instead of failing, see §1.1)
 and the week-27 capstone re-runs weeks 23–26 at 5 seeds (3 for the noise
 sweep) and re-checks the weekly pass gates, the week 23–25 fidelity gates
@@ -52,9 +51,9 @@ generalization: the 11 training states span the subspace that holds the
 test states, and there both fidelities are fixed polynomials of the
 state, so held-out fidelity follows from training fidelity for any
 encoder. That includes $r = 2.5$, the one test bond length just outside
-the training range (which ends at 2.4). Reconstruction fidelity in week 23 is 1.1 pp below local
-(trash) fidelity (0.9719 vs 0.9825). That closeness is guaranteed, not
-found: for a pure input, $F_{\text{loc}}^2 \le F_{\text{recon}} \le
+the training range (which ends at 2.4). Reconstruction fidelity in week
+23 is 1.1 pp below local (trash) fidelity (0.9719 vs 0.9825). That
+closeness is guaranteed, not found: for a pure input, $F_{\text{loc}}^2 \le F_{\text{recon}} \le
 F_{\text{loc}}$ (`tier3/check_qae_bounds.py`), so high trash fidelity
 forces high reconstruction fidelity, and the 5-seed means sit inside
 that range ($0.9825^2 = 0.9653$).
@@ -101,9 +100,10 @@ downstream computation that fed the decoded state into another circuit.
 
 Interpreting the slope: the decline flattens as $p$ grows (about 23
 fidelity per unit $p$ near $p = 0$, about 13 between $p = 0.01$ and
-$0.02$). Part of that is a floor: as the noise grows the trash register
-tends to the maximally mixed state, so $P(\text{trash} = 00)$ decays
-toward $1/4$, not toward 0. With that floor,
+$0.02$). That is what exponential decay toward a floor looks like: as
+the noise grows the trash register tends to the maximally mixed state,
+so $P(\text{trash} = 00)$ decays toward $1/4$, not toward 0. With that
+floor,
 $F(p) = 1/4 + (F(0) - 1/4)(1 - p)^n$ gives, for each noisy point in the
 table, $n = \ln[(F(p) - 1/4)/(F(0) - 1/4)] / \ln(1 - p)$ = 32, 30, 26
 and 26 at $p$ = 0.001, 0.005, 0.01 and 0.02. So the curve is consistent
