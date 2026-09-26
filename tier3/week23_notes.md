@@ -90,8 +90,13 @@ hard pass criteria:
 - final gradient norm > $10^{-3}$ (still moving)
 - initial gradient norm > 0.3 (not on the plateau at init)
 
-All five are checked at the bottom of the script. Five-of-five required
-to pass.
+These five gates were fixed in the committed script (commit 71ca939)
+before the first full run. `TIER3_PLAN.md` lists three of them: mean
+local fidelity > 0.95, std < 0.02, and a final gradient *variance*
+> $10^{-3}$, which the script checks as a gradient *norm*. The
+reconstruction and initial-gradient gates are in the script only. All
+five are checked at the bottom of the script: four as hard assertions,
+and the std gate as a printed report (below).
 
 **Result of the first full run: four of five.** Mean local fidelity is
 0.9825 ± 0.0214 and mean reconstruction fidelity 0.9719 ± 0.0349. Seeds

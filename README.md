@@ -40,8 +40,9 @@ parameter-matched comparison in this repo is tier 2 week 17, where a
 mean test accuracy), within seed noise (3 seeds, 20 test examples, where
 one example is 5 pp). In week 23, seed 2 stops at a stationary point at
 0.955 and seed 1 (0.958) is still on a slow plateau when training ends
-at epoch 200, which misses my pre-registered std < 0.02 gate; the script
-reports the miss rather than failing. `TIER3_REVIEW.md` has the full
+at epoch 200, which misses my pre-registered std < 0.02 gate (fixed in
+the committed script before the first full run; `TIER3_REVIEW.md` §5
+defines the term); the script reports the miss rather than failing. `TIER3_REVIEW.md` has the full
 writeup.
 
 To reproduce tier 3 in one script (about 22 minutes on 4 CPU cores):

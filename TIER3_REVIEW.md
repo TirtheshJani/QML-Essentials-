@@ -273,7 +273,13 @@ each:
 The biggest tier-over-tier delta in the writing is honesty under
 pressure. Tier 1 was structured by Codebook progress; Tier 2 by a
 plan with assertion gates; Tier 3 by *its own falsifiable
-predictions*, though not all of them could fail. The week-25 noise
+predictions*, though not all of them could fail. In this review
+"pre-registered" means fixed in the committed scripts at commit
+71ca939, before the first full run recorded in the history (in which
+week 23 stopped on its own std assert). `TIER3_PLAN.md` landed in the
+same commit and lists only some of the gates: week 23 has 5 gates in
+its script and 3 in the plan, and the plan's final gradient *variance*
+gate is a gradient *norm* gate in the script. The week-25 noise
 sweep had pre-registered pass criteria that could have failed (test
 fidelity > 0.85 at $p = 0.005$ and monotone decay in $p$; the script
 also requires more than 30 pp over random encoders at $p = 0.005$).

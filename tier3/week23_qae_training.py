@@ -146,6 +146,10 @@ def main():
     print(f"  saved {LOSS_PNG}")
 
     section("Checkpoint assertions")
+    # Five gates, fixed in the committed script (71ca939) before the first
+    # full run. TIER3_PLAN.md lists three of them (mean > 0.95, std < 0.02,
+    # final gradient *variance* > 1e-3, checked here as a gradient *norm*);
+    # the recon and init-gradient gates are in the script only.
     assert f_local_mu > 0.95, \
         f"mean local fidelity {f_local_mu:.4f} below 0.95 target"
     # Pre-registered gate (TIER3_PLAN.md): std across seeds < 0.02. The first
