@@ -40,25 +40,33 @@ and 4 in week 23. Seeds 1 and 2 stop in a local minimum (0.9576 and
 pre-registered std < 0.02 gate; the script reports the miss rather than
 hiding it (`tier3/week23_notes.md`). The held-out gate passes: in week
 24, four seeds reconstruct the unseen bond lengths at 1.0000 and seed 2
-at 0.9355. The mean gap between local (trash) fidelity and
+at 0.9355. On this 2-D linear dataset that is interpolation, not
+generalization: the 11 training states span the subspace that holds the
+test states, and there both fidelities are fixed polynomials of the
+state, so held-out fidelity follows from training fidelity for any
+encoder. The mean gap between local (trash) fidelity and
 reconstruction fidelity in week 23 is 1.1 pp (0.9825 vs 0.9719), so the
 trash-fidelity cost was a tight surrogate.
 
-### 1.2 The latent code recovered the bond-length axis
+### 1.2 The latent arc is a property of the data, not of training
 
 Week 24 projected the encoded code-qubit reduced density matrices onto
 their PCA axes across the 22 $r$ values. Spearman rank correlation
 between $r$ and PC1 of $\rho_{\text{code}}$ came out at
 $\rho_{\text{Spearman}} = -1.000$ (seed-0 model; the sign of a PCA axis
-is arbitrary, so $|\rho| = 1.000$ is the number that matters). The latent
-trajectory is a smooth 1-D arc parameterized by the bond length, with no
-fold-overs or discontinuities (`tier3/week24_latent_trajectory.png`).
+is arbitrary, so $|\rho| = 1.000$), with PC1 carrying 97.5 % of the
+variance. The latent trajectory is a smooth 1-D arc with no fold-overs
+(`tier3/week24_latent_trajectory.png`).
 
-This is the part that's not just "the cost is low" — it's *interpretable
-compression*. The encoder discovered that the only varying physical
-parameter in the dataset is $r$, and used its 2-qubit code as a
-1-parameter encoding of that axis (PC1 carries 97.5 % of the variance;
-PC2 is the arc's curvature, itself a smooth function of $r$).
+That is not evidence that the encoder discovered $r$. Every state is
+$\cos t\,\ket{1100} + \sin t\,\ket{0011}$ with $t$ moving monotonically
+in $r$, so any encoder maps the curve to a smooth arc of code states.
+The week-24 control runs the same features, PCA and Spearman on 1000
+untrained RY+CNOT encoders with seeded random angles: median
+$|\rho| = 1.0000$, mean $0.9994 \pm 0.0081$, and 999 of 1000 pass the
+pre-registered $|\rho| > 0.9$ gate. No encoder at all (the identity)
+also gives $|\rho| = 1.000$. The monotone latent arc is a property of
+the data, and the Spearman gate could essentially not fail.
 
 ### 1.3 Noise robustness was real but limited
 
@@ -244,11 +252,15 @@ each:
 The biggest tier-over-tier delta in the writing is honesty under
 pressure. Tier 1 was structured by Codebook progress; Tier 2 by a
 plan with assertion gates; Tier 3 by *its own falsifiable
-predictions*. The week-25 noise sweep, the week-24 Spearman test, and
-the week-26 head-to-head all had pre-registered pass criteria that
-could have failed (and would have, on a worse experiment). They
-didn't, but the discipline is what keeps the result trustworthy if it
-ever did. One pre-registered gate did fail: week 23's across-seed std
+predictions*, though not all of them could fail. The week-25 noise
+sweep had pre-registered pass criteria that could have failed (test
+fidelity > 0.85 at $p = 0.005$ and monotone decay in $p$; the script
+also requires more than 30 pp over random encoders at $p = 0.005$). Two other checks could not: 999 of 1000
+untrained encoders pass the week-24 Spearman gate (§1.2), and week 26's
+pre-registered criterion was only that the head-to-head table exists.
+The week-24 held-out split is weaker than it looks as well, since on
+this dataset held-out fidelity follows from training fidelity (§1.1).
+One pre-registered gate did fail: week 23's across-seed std
 (0.0214 against < 0.02, §1.1). The script reports the miss instead of
 moving the threshold.
 

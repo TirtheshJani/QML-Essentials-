@@ -22,13 +22,17 @@ weeks 23-26 and writes the QAE and classical-AE rows to
 |------|------:|
 | QAE local fidelity, all 22 states, 5 seeds (week 23) | 0.9825 ± 0.0214 |
 | QAE test reconstruction fidelity, 5 seeds (week 24) | 0.9871 ± 0.0258 |
-| Spearman(r, latent PC1), seed 0 (week 24) | -1.000 |
+| Spearman(r, latent PC1), seed 0 (week 24); 1000 untrained encoders give median abs. value 1.000 | -1.000 |
 | QAE test local fidelity at depolarizing p = 0.005, 3 seeds (week 25) | 0.8707 ± 0.0090 (random encoder 0.1952) |
 | Linear classical AE, 256 params, test reconstruction (week 26) | 1.0000 ± 0.0000 |
 | Nonlinear classical AE, 136 params, test reconstruction (week 26) | 0.9811 ± 0.0211 |
 
-Three caveats. The 22 H₂ states span only a 2-D subspace, so the linear
-AE reconstructs them exactly and the QAE cannot beat it. Neither
+Four caveats. The 22 H₂ states span only a 2-D subspace, so the linear
+AE reconstructs them exactly and the QAE cannot beat it. For the same
+reason the Spearman row is a property of the data, not of training
+(every state is cos t|1100⟩ + sin t|0011⟩, and 999 of 1000 untrained
+encoders also pass the |ρ| > 0.9 gate), and the held-out split tests
+interpolation along the curve, not generalization. Neither
 classical AE is parameter-matched to the QAE's 16 parameters, and the
 QAE and the 136-parameter AE tie within one standard deviation; the only
 parameter-matched comparison in this repo is tier 2 week 17, where a
@@ -157,8 +161,10 @@ fidelity / Uhlmann-fidelity helpers (`tier3/utils/states.py`).
 4-qubit, 16-parameter, depth-4 RY+CNOT encoder trained on the Romero
 trash-fidelity cost (a global cost in the terminology of
 [Cerezo et al. 2021](https://doi.org/10.1038/s41467-021-21728-w));
-5-seed mean-±-std reporting; held-out generalization +
-latent-space monotonicity (Spearman-ρ test on $r$ vs PC1 of $\rho_{\text{code}}$).
+5-seed mean-±-std reporting; a held-out split (on this 2-D dataset it
+tests interpolation, not generalization) and a latent-space Spearman-ρ
+test on $r$ vs PC1 of $\rho_{\text{code}}$, with an untrained-encoder
+control that passes the same test.
 
 ### 3C. Noise robustness (week 25) ✓
 Switch from `default.qubit` → `default.mixed` with depolarizing channel

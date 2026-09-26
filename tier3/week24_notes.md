@@ -7,6 +7,14 @@ Week 23 trained on the full 22-state $r$-curve. Week 24 splits it
 odd-indexed $r$ values that the model never saw. This is the smallest
 possible "is the QAE doing more than memorizing the training set?" test.
 
+On this dataset it tests interpolation, not generalization. The 11
+training states already span the 2-D subspace that holds the 11 test
+states (which sit between them on the same curve), and on that real
+subspace both fidelities are fixed polynomials of the state (quadratic
+for local fidelity, quartic for reconstruction fidelity). So for any
+encoder the training fidelities determine the held-out ones, and a small
+gap is expected by construction.
+
 ## Generalization metric
 
 Two numbers, each averaged over 5 seeds:
@@ -33,20 +41,27 @@ trace = 1 reducing to 15). We flatten and concatenate
 $(\mathrm{Re}\rho, \mathrm{Im}\rho)$ into a 32-D feature vector per state,
 then run PCA across the 22 $r$ points.
 
-If the QAE learned that $r$ is the only varying axis, **PC1 should track
-$r$ monotonically.** We test this with Spearman rank correlation:
+The pre-registered test was that **PC1 should track $r$
+monotonically** if the QAE learned that $r$ is the only varying axis,
+measured with Spearman rank correlation:
 
 $$
 \rho_{\text{Spearman}}(r, \text{PC1}) \in [-1, 1].
 $$
 
-A value near $\pm 1$ means the QAE used its 2-qubit code as a
-1-D parameterization of the bond-length axis (with one extra degree of
-freedom representing where the input states actually differ within the
-2-D data subspace). That's not just "low loss"; that's *interpretable
-compression*.
+Pass threshold: $|\rho_{\text{Spearman}}| > 0.9$. The trained seed-0
+encoder gives $-1.000$.
 
-Pass threshold: $|\rho_{\text{Spearman}}| > 0.9$.
+**The test cannot tell a trained encoder from an untrained one.** Every
+state is $\cos t\,\ket{1100} + \sin t\,\ket{0011}$ with $t$ moving
+monotonically in $r$, so for any encoder $\rho_{\text{code}}(r)$ is a
+quadratic function of $(\cos t, \sin t)$ and the features trace a
+smooth arc. The script's control (section 3b) runs the same features,
+PCA and Spearman on 1000 untrained RY+CNOT encoders with seeded random
+angles: median $|\rho| = 1.0000$, mean $0.9994 \pm 0.0081$, and 999 of
+1000 pass the 0.9 gate. No encoder at all (the identity) also gives
+$|\rho| = 1.0000$. The monotone latent arc is a property of the data,
+not evidence that training discovered $r$.
 
 ## Why we keep the *encoder* unitary, not the decoder
 
@@ -59,21 +74,23 @@ $V(\boldsymbol\alpha)$ for the latent-space probe.
 
 ## Failure modes this week catches
 
-- **Overfitting** — large train/test gap. The QAE has 16 parameters;
-  the dataset has 22 states living in a 2-D subspace, so memorization
-  is geometrically possible. The held-out evaluation rules it out (or
-  confirms it, depending on how training goes).
+- **Overfitting** — large train/test gap. The QAE has 16 parameters and
+  the dataset has 22 states in a 2-D subspace. This split cannot show
+  overfitting: the training states span that subspace, so the held-out
+  fidelities follow from the training ones (see above).
 - **Trash-fidelity success but recon-failure** — high $P(\text{trash}=00)$
   but low $F_{\text{recon}}$. This happens when the encoder learns to
   zero out the trash *for one of the Schmidt sectors only*, leaving
   the other sectors poorly encoded. The reconstruction fidelity check
   catches it; the trash-fidelity cost alone wouldn't.
 - **Latent collapse** — a high-fidelity QAE that maps every $r$ to
-  almost the same code state. Spearman correlation < 0.5 catches this.
+  almost the same code state. Spearman correlation does not catch this
+  (it ignores scale, and untrained encoders already score about 1); the
+  printed singular values of the latent features are the thing to check.
 
 ## Output
 
 `tier3/week24_latent_trajectory.png` — a 2-D PCA projection of the
-$\rho_{\text{code}}(r)$ trajectory, colored by $r$. A smooth color
-gradient along the curve means we have a good encoding; a scrambled
-gradient means we don't.
+$\rho_{\text{code}}(r)$ trajectory, colored by $r$. A scrambled color
+gradient would mean a broken pipeline; a smooth one is what untrained
+encoders give too, so it is not evidence of a good encoding.
