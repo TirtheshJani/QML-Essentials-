@@ -35,11 +35,9 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from scipy.stats import spearmanr
 
 from tier3.utils.states import (
     build_h2_dataset,
-    reduced_density_matrix,
     reconstruction_fidelity,
     local_fidelity,
     N_QUBITS,
@@ -54,6 +52,11 @@ from tier3.utils.classical import (
     train_classical_ae,
     reconstruction_fidelity_classical,
 )
+from tier3.utils.latent import (
+    latent_pca,
+    pc1_spearman,
+    random_encoder_spearman,
+)
 
 R_GRID = np.round(np.arange(0.4, 2.51, 0.1), 2)
 TRAIN_IDX = np.arange(0, len(R_GRID), 2)
@@ -65,6 +68,8 @@ SEEDS = (0, 1, 2, 3, 4)
 NOISE_SEEDS = (0, 1, 2)
 NOISE_LEVELS = (0.0, 0.005, 0.02)  # reduced sweep for the capstone
 NOISE_EPOCHS = 100
+N_CONTROL = 1000     # untrained encoders in the week-24 latent control
+CONTROL_SEED = 24    # same draws as week 24
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_PATH = os.path.join(THIS_DIR, "week27_summary.csv")
@@ -190,21 +195,19 @@ def main():
                      f"{qae_test_rec.std():.4f}", len(SEEDS)))
 
     section("3. Week 24 - latent-space monotonicity")
-    feats = []
-    for psi in states:
-        enc = seed0_U @ psi
-        T = enc.reshape(4, 4)
-        rho_code = T @ np.conj(T.T)
-        feats.append(rho_code.flatten())
-    feats = np.array(feats)
-    feats = np.concatenate([feats.real, feats.imag], axis=1)
-    feats_c = feats - feats.mean(axis=0, keepdims=True)
-    _, sing, Vt = np.linalg.svd(feats_c, full_matrices=False)
-    pcs = feats_c @ Vt.T
-    rho_pc1, _ = spearmanr(R_GRID, pcs[:, 0])
+    pcs, _ = latent_pca(states, seed0_U)
+    rho_pc1 = pc1_spearman(R_GRID, states, seed0_U)
+    ctrl = random_encoder_spearman(R_GRID, states, N_LAYERS, N_CONTROL,
+                                   CONTROL_SEED)
     print(f"  Spearman(r, PC1) : {rho_pc1:+.4f}")
+    print(f"  untrained encoders, |Spearman| : {ctrl.mean():.4f} +/- "
+          f"{ctrl.std():.4f} (median {np.median(ctrl):.4f}, "
+          f"{int(np.sum(ctrl > 0.9))} of {N_CONTROL} above 0.9)")
     csv_rows.append(("week24", "QAE", "all", "spearman_r_pc1",
                      f"{rho_pc1:+.4f}", "0.0", "1"))
+    csv_rows.append(("week24", "UntrainedEncoder", "all",
+                     "abs_spearman_r_pc1", f"{ctrl.mean():.4f}",
+                     f"{ctrl.std():.4f}", N_CONTROL))
 
     section("4. Week 25 - depolarizing noise sweep (reduced)")
     noise_table = {}
@@ -271,7 +274,9 @@ def main():
     fig.colorbar(sc, ax=ax, label="r (A)")
     ax.set_xlabel("PC1(rho_code)")
     ax.set_ylabel("PC2(rho_code)")
-    ax.set_title(f"(b) latent trajectory, Spearman = {rho_pc1:+.3f}")
+    ax.set_title(f"(b) latent trajectory, Spearman = {rho_pc1:+.3f}\n"
+                 f"(untrained encoders: median |Spearman| = "
+                 f"{np.median(ctrl):.3f})")
 
     # (1, 0) noise sweep
     ax = axes[1, 0]
