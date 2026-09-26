@@ -121,8 +121,12 @@ def main():
     print(f"  mean reconstruction fid.  : {f_recon_mu:.4f} +/- {f_recon_sd:.4f}")
     print(f"  init gradient norm        : {g0_mu:.4f}")
     print(f"  final gradient norm       : {gN_mu:.6f}")
-    print(f"  -> training did not flatten gradients to zero; the model")
-    print(f"     left the plateau-free regime intact.")
+    n_low = sum(g < 1e-3 for g in final_grads)
+    if n_low == 0:
+        print(f"  -> every seed ends with gradient norm above 1e-3.")
+    else:
+        print(f"  -> {n_low} of {len(SEEDS)} seeds end with gradient norm below "
+              f"1e-3 (per-seed |grad|@end above); the gate is on the mean.")
 
     section("4. Save loss-curve plot (seed = 0)")
     fig, ax = plt.subplots(figsize=(7, 4))
@@ -157,8 +161,13 @@ def main():
     assert g0_mu > 0.3, \
         f"init gradient norm {g0_mu:.4f} suggests the ansatz starts on the plateau"
     assert os.path.exists(LOSS_PNG)
-    print(f"  PASS: QAE trains to local fid {f_local_mu:.3f} +/- {f_local_sd:.3f}, "
-          f"recon fid {f_recon_mu:.3f}, gradients healthy at both ends.")
+    n_gates = 5
+    std_missed = f_local_sd >= 0.02
+    note = " (std gate missed)" if std_missed else ""
+    print(f"  PASS on {n_gates - int(std_missed)} of {n_gates} pre-registered "
+          f"gates{note}: local fid {f_local_mu:.3f} +/- {f_local_sd:.3f}, "
+          f"recon fid {f_recon_mu:.3f}, mean gradient norm {g0_mu:.2f} at "
+          f"init and {gN_mu:.4f} at the end.")
 
 
 if __name__ == "__main__":
