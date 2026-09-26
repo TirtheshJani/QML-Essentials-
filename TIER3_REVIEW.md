@@ -5,8 +5,11 @@ family of H₂/STO-3G ground states, evaluated generalization, swept
 depolarizing noise on `default.mixed`, and compared head-to-head against
 two classical autoencoder baselines. Every weekly script is assertion-gated
 (week 23 reports one missed gate instead of failing, see §1.1)
-and the week-27 capstone re-runs the whole pipeline at 5 seeds (3 for the
-noise sweep) with a 2σ regression check on every headline number.
+and the week-27 capstone re-runs weeks 23–26 at 5 seeds (3 for the noise
+sweep) and re-checks the weekly pass gates, the week 23–25 fidelity gates
+loosened by 2σ of the run. It does not compare against the weekly
+numbers, but every run is seeded, and on the pinned requirements it
+reproduces weeks 23–26 to the printed 4 decimals.
 
 This review is the structural twin of `TIER2_REVIEW.md`: what the artifact
 demonstrated, where barren plateaus did and didn't appear, the honest

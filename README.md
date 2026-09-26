@@ -178,8 +178,12 @@ honest comparison; both reported, neither cherry-picked.
 
 ### Capstone — week 27 ✓
 `tier3/week27_capstone.py` reruns weeks 23–26 in one execution, writes
-`week27_summary.csv` + a 2×2 figure panel, and asserts every prior
-weekly headline within 2σ. Cross-tier writeup in `TIER3_REVIEW.md`.
+`week27_summary.csv` + a 2×2 figure panel, and re-checks the weekly
+pass gates (the week 23, 24 and 25 fidelity gates loosened by 2σ of the
+run). It does not compare against the weekly scripts' numbers, but
+every run is seeded, and on the pinned requirements its numbers match
+weeks 23–26 to the printed 4 decimals. Cross-tier writeup in
+`TIER3_REVIEW.md`.
 
 ---
 
