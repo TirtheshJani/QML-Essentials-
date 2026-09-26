@@ -25,7 +25,9 @@ quantum data" (QAE) without inventing fresh data.
 
 - Romero, Olson, Aspuru-Guzik, *Quantum autoencoders for efficient
   compression of quantum data*, **arXiv:1612.02806** (2017). Eq. 6 (local
-  trash-fidelity cost) is the training target. Sec. III.B is the H₂
+  trash-fidelity cost) is the training target. (As built it is called
+  the trash-fidelity cost: it projects onto both trash qubits, so it is
+  global in Cerezo et al.'s terms; see `TIER3_REVIEW.md` §2.) Sec. III.B is the H₂
   application that we will reproduce in spirit at smaller scale.
 - Schuld & Petruccione ch. 9 (autoencoders + state compression).
 - Tier 2 review §4 — five lessons that this plan operationalizes.
@@ -41,7 +43,7 @@ QAE checks every box from the Tier 2 review:
 | 3. assertion-gated weeks | every script keeps the tier-1/2 assert pattern |
 | 4. barren-plateau monitoring early | week 23 logs gradient variance from epoch 1 |
 | 5. honest classical baseline | week 26 trains classical AE baselines (planned as parameter-matched; as built they have 256 and 136 parameters to the QAE's 16, see `tier3/week26_notes.md`) |
-| 6. multi-seed reproducibility | every headline number reported as mean ± std over 5 seeds |
+| 6. multi-seed reproducibility | every headline number reported as mean ± std over 5 seeds (as built: 3 seeds for the week 25 noise sweep) |
 
 It is also a *quantum-native* task: input is quantum states, output is
 quantum states. The classical baseline (PCA / classical AE on amplitude
@@ -171,7 +173,8 @@ The honest comparison. Tier 2 review item 5.
   classical AE output and treating it as a quantum state) and (b) raw
   MSE.
 - Be honest in the writeup. The classical AE can in principle nail this
-  because the data lives in a 4-D linear subspace of ℝ³².
+  because the data lives in a 4-D linear subspace of ℝ³² (as built:
+  2-D, week 22).
 - Pass: head-to-head table exists with mean ± std over 5 seeds for both
   models; both numbers reported, neither cherry-picked.
 
