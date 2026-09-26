@@ -4,6 +4,7 @@ Tier 3 (weeks 22–27) trained a 4-qubit quantum autoencoder on a 1-parameter
 family of H₂/STO-3G ground states, evaluated generalization, swept
 depolarizing noise on `default.mixed`, and compared head-to-head against
 two classical autoencoder baselines. Every weekly script is assertion-gated
+(week 23 reports one missed gate instead of failing, see §1.1)
 and the week-27 capstone re-runs the whole pipeline at 5 seeds (3 for the
 noise sweep) with a 2σ regression check on every headline number.
 
@@ -14,61 +15,73 @@ publication-quality follow-up.
 
 ## 1. What the QAE actually demonstrated
 
-### 1.1 Compression worked at the geometric minimum
+### 1.1 Compression worked, with room to spare
 
-The H₂ ground-state set lives in a 4-D linear subspace of $\mathbb{C}^{16}$
-(week 22 SVD: top 4 singular values capture > 99.9 % of variance). A
-2-qubit code is the *minimal* quantum bottleneck that can fit it
-losslessly. The QAE saturated the achievable bound:
+The H₂ ground-state set lives in a 2-D linear subspace of $\mathbb{C}^{16}$
+(week 22 SVD: singular values 4.584 and 0.993, the rest below $10^{-15}$;
+every state is a real combination of $\ket{1100}$ and $\ket{0011}$). A
+2-qubit code (4-D) fits it losslessly with room to spare; strictly, one
+code qubit would already be enough. Numbers below are what the scripts
+print with the pinned `requirements.txt`:
 
 | metric | mean ± std (5 seeds) |
 |------|------:|
-| training local fidelity (full curve) | **0.987 ± 0.011** |
-| training reconstruction fidelity | **0.972 ± 0.014** |
-| held-out test reconstruction fidelity | **0.946 ± 0.018** |
-| generalization gap (recon, train − test) | **+2.6 pp** |
-| init gradient norm $\|\nabla C\|_2$ | 1.31 |
-| final gradient norm $\|\nabla C\|_2$ | 4.6 × 10⁻³ |
+| training local fidelity (full curve, week 23) | **0.9825 ± 0.0214** |
+| training reconstruction fidelity (full curve, week 23) | **0.9719 ± 0.0349** |
+| held-out test reconstruction fidelity (week 24) | **0.9871 ± 0.0258** |
+| generalization gap (recon, train − test, week 24) | **+0.05 pp** |
+| init gradient norm $\|\nabla C\|_2$ (week 23) | 0.44 |
+| final gradient norm $\|\nabla C\|_2$ (week 23) | 2.3 × 10⁻³ |
 
-The 16-parameter, depth-4 RY+CNOT encoder (matched parameter count to
-*exactly* the quantum block from Tier 2 week 21) reaches near-perfect
-local fidelity and stays well above the held-out gate. The local-cost-vs-
-reconstruction-fidelity gap that the Romero paper warns about closed to
-~1.5 pp at convergence — i.e. the local cost was a tight surrogate.
+The 16-parameter, depth-4 RY+CNOT encoder (twice the 8 quantum weights
+of the Tier 2 week 21 block) reaches local fidelity 1.0000 on seeds 0, 3
+and 4 in week 23. Seeds 1 and 2 stop in a local minimum (0.9576 and
+0.9551), which puts the across-seed std at 0.0214 and misses the
+pre-registered std < 0.02 gate; the script reports the miss rather than
+hiding it (`tier3/week23_notes.md`). The held-out gate passes: in week
+24, four seeds reconstruct the unseen bond lengths at 1.0000 and seed 2
+at 0.9355. The mean gap between local cost and reconstruction fidelity
+in week 23 is 1.1 pp (0.9825 vs 0.9719), so the local cost was a tight
+surrogate.
 
 ### 1.2 The latent code recovered the bond-length axis
 
 Week 24 projected the encoded code-qubit reduced density matrices onto
 their PCA axes across the 22 $r$ values. Spearman rank correlation
 between $r$ and PC1 of $\rho_{\text{code}}$ came out at
-$\rho_{\text{Spearman}} = +0.998$ (seed-0 model). The latent trajectory
-is a smooth 1-D arc parameterized by the bond length, with no fold-overs
-or discontinuities.
+$\rho_{\text{Spearman}} = -1.000$ (seed-0 model; the sign of a PCA axis
+is arbitrary, so $|\rho| = 1.000$ is the number that matters). The latent
+trajectory is a smooth 1-D arc parameterized by the bond length, with no
+fold-overs or discontinuities (`tier3/week24_latent_trajectory.png`).
 
 This is the part that's not just "the cost is low" — it's *interpretable
 compression*. The encoder discovered that the only varying physical
 parameter in the dataset is $r$, and used its 2-qubit code as a
-1-parameter encoding of that axis (with one extra "noise" axis that
-spreads orthogonally and carries no physical signal).
+1-parameter encoding of that axis (PC1 carries 97.5 % of the variance;
+PC2 is the arc's curvature, itself a smooth function of $r$).
 
 ### 1.3 Noise robustness was real but limited
 
+Week 25, test local fidelity $P(\text{trash} = 00)$, mean ± std over 3
+seeds:
+
 | depolarizing rate $p$ | trained-test fidelity | random-encoder | Δ |
 |---:|---:|---:|---:|
-| 0.000 | 0.95 ± 0.02 | 0.27 | **+68 pp** |
-| 0.001 | 0.92 ± 0.02 | 0.27 | **+65 pp** |
-| 0.005 | 0.87 ± 0.03 | 0.26 | **+61 pp** |
-| 0.010 | 0.81 ± 0.04 | 0.26 | **+55 pp** |
-| 0.020 | 0.71 ± 0.05 | 0.25 | **+46 pp** |
+| 0.000 | 0.971 ± 0.021 | 0.182 | **+79 pp** |
+| 0.001 | 0.948 ± 0.018 | 0.185 | **+76 pp** |
+| 0.005 | 0.871 ± 0.009 | 0.195 | **+68 pp** |
+| 0.010 | 0.803 ± 0.011 | 0.207 | **+60 pp** |
+| 0.020 | 0.678 ± 0.010 | 0.224 | **+45 pp** |
 
 Per-gate $p \approx 5\times10^{-3}$ corresponds to current IBM 2-qubit
-gate error rates. At that operating point the trained QAE was 61 pp
+gate error rates. At that operating point the trained QAE was 68 pp
 above a random encoder — not a small effect — but the absolute fidelity
-has dropped from 0.95 to 0.87. That delta would compound in any
+has dropped from 0.97 to 0.87. That delta would compound in any
 downstream computation that fed the decoded state into another circuit.
 
-Interpreting the slope: the dominant trend is approximately linear in
-$p$ across the trained range, not exponential, which is consistent with
+Interpreting the slope: the decline flattens as $p$ grows (about 23
+fidelity per unit $p$ near $p = 0$, about 13 between $p = 0.01$ and
+$0.02$) and stays milder than a naive exponential, which is consistent with
 the depolarizing channel's contribution to expectation values for
 shallow circuits ($\langle O\rangle \to (1-p)^{n_g} \langle O\rangle$
 with $n_g \approx 30$ gates would give a steeper curve; the milder
@@ -80,13 +93,14 @@ full state).
 
 Tier 2 review item 4 said "move barren-plateau monitoring earlier in the
 workflow." Tier 3 followed it: the gradient norm was logged inline at
-epochs 0, 50, 100, 150, 199 of every training run. Result:
+epochs 0, 50, 100, 150 and 199 in week 23 (0 and 199 in weeks 24 and
+27). Result:
 
 | location | observation |
 |------|------|
-| init, $n=4$, $L=4$ | $\|\nabla C\|_2 = 1.31$ — well above the plateau |
-| training, all weeks | gradient norm decayed by ~3 orders of magnitude as the cost converged, but never crossed the $10^{-3}$ trainability floor |
-| under noise, $p = 0.02$ | $\|\nabla C\|_2$ at init dropped to 0.78 — depolarizing noise *flattens* the cost landscape, contributing additively to the plateau effect |
+| init, $n=4$, $L=4$ | $\|\nabla C\|_2 = 0.44$ (5-seed mean, range 0.28 to 0.51), well above the plateau |
+| training, week 23 | the 5-seed mean fell from 0.44 to $2.3 \times 10^{-3}$; seeds 2, 3 and 4 end below $10^{-3}$ because they converged (two at local fidelity 1.0000, one in the 0.955 local minimum), not because they stalled |
+| under noise | not measured: the week 25 and week 27 noise runs do not log gradient norms |
 
 In short: the choice of $n_{\text{qubits}} = 4$ and $L = 4$ from the
 Tier 2 week-14 probe made the QAE trainable by construction. The
@@ -103,11 +117,13 @@ effective dimension, it might also be unnecessary.
 
 ## 3. Quantum-vs-classical scoreboard
 
+Week 26, same train/test split, 5 seeds:
+
 | model | params | test recon fidelity | notes |
 |------|---:|---:|------|
-| Linear classical AE | 256 | **0.999 ± 0.001** | oracle on a 4-D subspace |
-| QAE | 16 | **0.946 ± 0.018** | the headline result |
-| Matched nonlinear classical AE | 32 | **0.86 ± 0.04** | smallest sensible classical fight |
+| Linear classical AE | 256 | **1.0000 ± 0.0000** | oracle on a 2-D subspace |
+| QAE | 16 | **0.9871 ± 0.0258** | the headline result |
+| "Matched" nonlinear classical AE | 136 | **0.9811 ± 0.0211** | smallest sensible classical fight |
 
 Three honest readings of this table:
 
@@ -119,12 +135,13 @@ Three honest readings of this table:
   with a model that doesn't know the geometry; you can only match it.
   At 256 parameters the linear AE essentially *is* the SVD.
 
-- **The QAE outperforms the matched-parameter classical AE by
-  ~9 pp.** This is real, but the comparison is structurally awkward —
-  16 quantum parameters generate 16-D unitary transformations on a
-  16-D Hilbert space, which has more *expressivity per parameter* than
-  16 real linear weights on a 32-D real space. The "matched" classical
-  baseline is fighting with one hand tied. We report it because not
+- **The QAE and the small nonlinear classical AE tie.** The QAE is
+  ahead by 0.6 pp (0.9871 vs 0.9811), well inside one standard
+  deviation, and both have seeds that stop lower (for the QAE, seed 2
+  at 0.9355 in week 24). The comparison is also not
+  parameter-matched: the classical AE has 136 weights to the QAE's 16,
+  and no classical AE that reads all 32 input numbers can get down to
+  16 (a $32 \to 1 \to 32$ AE already has 64). We report it because not
   reporting it is dishonest, but the conclusion isn't "quantum wins
   at parameter count" — it's "parameter count isn't the right
   comparison axis."
@@ -157,7 +174,7 @@ In rough order of expected impact:
    simplest plausible — real devices have correlated, non-Markovian,
    and gate-specific errors that this sweep doesn't capture.
 
-2. **Pick a non-linear dataset.** H₂ ground states are a 4-D linear
+2. **Pick a non-linear dataset.** H₂ ground states are a 2-D linear
    subspace, which is exactly the regime where a linear classical AE
    wins by construction. The next experiment is a dataset that's
    geometrically linear in *some* state-space representation but not
@@ -213,7 +230,9 @@ predictions*. The week-25 noise sweep, the week-24 Spearman test, and
 the week-26 head-to-head all had pre-registered pass criteria that
 could have failed (and would have, on a worse experiment). They
 didn't, but the discipline is what keeps the result trustworthy if it
-ever did.
+ever did. One pre-registered gate did fail: week 23's across-seed std
+(0.0214 against < 0.02, §1.1). The script reports the miss instead of
+moving the threshold.
 
 ## 6. Closing thought
 

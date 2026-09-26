@@ -56,6 +56,11 @@ From the dataset's geometric structure:
 2. QAE → 0.95 ± few pp (limited by the local-cost surrogate gap)
 3. Matched nonlinear AE → 0.85 ± noise (small, has to learn)
 
+Measured (pinned `requirements.txt`, 5 seeds, test reconstruction
+fidelity): linear AE 1.0000 ± 0.0000, QAE 0.9871 ± 0.0258, matched AE
+0.9811 ± 0.0211. The ranking held, but the matched AE did far better
+than predicted and sits within one standard deviation of the QAE.
+
 This is not a story of quantum advantage on this specific dataset. The
 H₂ ground-state manifold is *too easy* for the classical baseline at
 unconstrained capacity. The QAE's interest comes from elsewhere:
