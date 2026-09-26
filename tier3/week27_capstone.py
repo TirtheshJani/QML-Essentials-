@@ -287,7 +287,8 @@ def main():
 
     # (1, 1) Q-vs-classical bars
     ax = axes[1, 1]
-    bar_names = ["QAE\n(16 par)", "Matched\nclassical\n(32 par)",
+    bar_names = ["QAE\n(16 par)",
+                 f"Matched\nclassical\n({m_mat.n_params()} par)",
                  "Linear AE\n(256 par)"]
     bar_means = [qae_test_rec.mean(), mat_test.mean(), lin_test.mean()]
     bar_sds = [qae_test_rec.std(), mat_test.std(), lin_test.std()]

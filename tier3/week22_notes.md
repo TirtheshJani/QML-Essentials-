@@ -29,10 +29,12 @@ Three reasons, all about quantum structure (Tier 2 review item 1):
 1. **Inputs are quantum states by construction.** No encoding choice to
    second-guess (which dominated the Tier 2 classifier results, week 15).
 2. **The dataset is geometrically simple.** We measured the singular
-   values of the stacked $(22, 16)$ amplitude matrix and the top 4 capture
-   > 99.9 % of the variance — i.e. the entire $r$-curve lives in a 4-D
-   linear subspace of $\mathbb{C}^{16}$. A 2-qubit code (also 4-D) is the
-   *minimal* quantum bottleneck that can fit the dataset losslessly.
+   values of the stacked $(22, 16)$ amplitude matrix: only two are
+   non-negligible (4.584 and 0.993; the rest are below $10^{-15}$), so the
+   entire $r$-curve lives in a 2-D linear subspace of $\mathbb{C}^{16}$,
+   spanned by $\ket{1100}$ and $\ket{0011}$. A 2-qubit code (4-D) fits the
+   dataset losslessly with room to spare; strictly, one code qubit would
+   already be enough.
 3. **It connects Tier 2 to Tier 3.** Same `qml.qchem` machinery; same
    chem helper; the QAE is now compressing the *output* of the VQE
    pipeline.

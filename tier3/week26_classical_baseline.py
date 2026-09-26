@@ -7,10 +7,10 @@ length-32 real vectors, real and imaginary parts concatenated):
   - Linear AE: encoder Linear(32 -> 4) + decoder Linear(4 -> 32), no bias.
     256 trainable parameters. Best linear reconstruction possible (PCA
     in disguise).
-  - Param-matched AE: a deliberately under-parameterized AE shrunk to
-    ~16 trainable parameters to match the QAE's parameter budget. Picks
-    a 2-hidden-unit nonlinear AE; this is roughly the smallest
-    architecture that can in principle represent a 4-D subspace.
+  - "Matched" AE: 32 -> 2 -> 2 -> 2 -> 32 with tanh, no bias, 136
+    trainable parameters. The aim was the QAE's 16, but a classical AE
+    that reads all 32 input axes cannot get that small, so this is the
+    closest small architecture, not an exact parameter match.
 
 The QAE is the trained model from week 23 (seed = 0..4, 16 parameters).
 We report:
@@ -20,8 +20,9 @@ We report:
   - mean-square error on the real-vector representation.
 
 Honest result expected: linear AE reaches near-perfect fidelity (because
-the dataset *is* a 4-D linear subspace of C^16), so it's an upper bound,
-not a fair fight. The matched-parameter AE is the fair comparison.
+the dataset *is* a 2-D linear subspace of C^16, see week 22), so it's an
+upper bound, not a fair fight. The small 136-parameter AE is the closer
+comparison.
 """
 
 import os
@@ -154,7 +155,8 @@ def main():
     section("5. Head-to-head table (test reconstruction fidelity)")
     rows = [
         ("QAE (16 params)",      qae_test_rec.mean(),  qae_test_rec.std()),
-        ("Matched cls (32 par)", mat_test_fid.mean(),  mat_test_fid.std()),
+        (f"Matched cls ({matched_ae.n_params()} par)", mat_test_fid.mean(),
+         mat_test_fid.std()),
         ("Linear AE (256 par)",  lin_test_fid.mean(),  lin_test_fid.std()),
     ]
     print(f"  {'model':>22s}  {'mean':>6s}  {'std':>6s}")
@@ -165,16 +167,16 @@ def main():
     delta_q_vs_lin = qae_test_rec.mean() - lin_test_fid.mean()
     print(f"\n  QAE - matched-classical : {delta_q_vs_match*100:+.2f} pp")
     print(f"  QAE - linear-classical  : {delta_q_vs_lin*100:+.2f} pp")
-    print( "  Linear AE is an upper-bound oracle (PCA on 4-D subspace);")
+    print( "  Linear AE is an upper-bound oracle (PCA; data span a 2-D subspace);")
     print( "  matched-classical is the fair small-model comparison.")
 
     section("Checkpoint assertions")
     assert qae_test_rec.mean() > 0.85, \
         f"QAE test recon {qae_test_rec.mean():.4f} below 0.85"
-    # Linear AE should hit near-perfect because dataset is 4-D
+    # Linear AE should hit near-perfect because dataset is 2-D (week 22)
     assert lin_test_fid.mean() > 0.95, \
         f"Linear AE test fid {lin_test_fid.mean():.4f} below 0.95 -- " \
-        f"expected near-perfect on 4-D subspace"
+        f"expected near-perfect on a 2-D subspace"
     # Honest report: numbers exist for all three columns
     for arr in (qae_test_rec, lin_test_fid, mat_test_fid):
         assert np.all(arr >= 0.0) and np.all(arr <= 1.0)

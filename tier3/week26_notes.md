@@ -24,15 +24,17 @@ decoder $\mathbf{c} \mapsto \hat{\mathbf{x}} = W_d \mathbf{c}$, with
 $W_e \in \mathbb{R}^{4 \times 32}$, $W_d \in \mathbb{R}^{32 \times 4}$.
 
 This is the classical *upper bound*. Because the H₂ ground-state set
-is a 4-D subspace of $\mathbb{C}^{16}$ (week 22 SVD), a 4-D linear
+is a 2-D subspace of $\mathbb{C}^{16}$ (week 22 SVD), a 4-D linear
 bottleneck *can* losslessly reconstruct the entire dataset. Trained
 to convergence, the linear AE will achieve ~1.0 fidelity. The QAE
-beating this would imply the dataset is *not* 4-D linear, which we know
-to be false.
+beating this would imply the dataset is *not* a low-dimensional linear
+subspace, which we know to be false.
 
-**Param-matched nonlinear AE (~32 params)** — the fair comparison: a
+**"Matched" nonlinear AE (136 params)** — the fair comparison: a
 $32 \to 2 \to 2 \to 2 \to 32$ AE with `tanh` non-linearities, no
-biases, code dim = 2. It's still bigger than the QAE's 16 parameters
+biases, code dim = 2 ($2{\times}32 + 2{\times}2 + 2{\times}2 +
+32{\times}2 = 136$ weights, printed by the script). It's still bigger
+than the QAE's 16 parameters, so it is not an exact parameter match,
 but it's the smallest sensible classical architecture that touches
 the full 32-D input space and uses a 2-D code matching the QAE's code
 qubits.
@@ -41,7 +43,7 @@ We can't get the classical AE down to 16 parameters and still touch
 all 32 input axes — a $32 \to 1$ encoder has 32 parameters by itself.
 This **structural asymmetry** is itself one of the points of this
 week: the parameter-counting argument doesn't translate cleanly between
-quantum and classical models. The QAE's 16 *complex-amplitude*
+quantum and classical models. The QAE's 16 real rotation-angle
 parameters generate a Lie group transformation on a 16-D Hilbert space,
 which is genuinely more expressive per parameter than 16 real linear
 weights.

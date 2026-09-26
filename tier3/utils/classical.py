@@ -21,7 +21,7 @@ disadvantaged. So we do two comparisons in week 26:
   - "Tiny classical AE" with widths shrunk to land at ~16 trainable params
     (e.g. encoder Linear(32 -> 1) + decoder Linear(1 -> 32) = 64 params; the
     smallest matched architecture is bottleneck = 1, no bias, but that
-    can't represent a 4-D subspace at all).
+    can't represent the 2-D data subspace at all).
   - "Standard classical AE" at unconstrained capacity (256 params) —
     serves as the upper bound. Honest comparison reports both.
 

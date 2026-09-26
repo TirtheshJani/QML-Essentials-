@@ -43,7 +43,7 @@ $$
 A value near $\pm 1$ means the QAE used its 2-qubit code as a
 1-D parameterization of the bond-length axis (with one extra degree of
 freedom representing where the input states actually differ within the
-4-D subspace). That's not just "low loss"; that's *interpretable
+2-D data subspace). That's not just "low loss"; that's *interpretable
 compression*.
 
 Pass threshold: $|\rho_{\text{Spearman}}| > 0.9$.
@@ -60,7 +60,7 @@ $V(\boldsymbol\alpha)$ for the latent-space probe.
 ## Failure modes this week catches
 
 - **Overfitting** — large train/test gap. The QAE has 16 parameters;
-  the dataset has 22 states living in a 4-D subspace, so memorization
+  the dataset has 22 states living in a 2-D subspace, so memorization
   is geometrically possible. The held-out evaluation rules it out (or
   confirms it, depending on how training goes).
 - **Local-cost-success but recon-failure** — high $P(\text{trash}=00)$

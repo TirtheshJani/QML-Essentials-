@@ -2,8 +2,9 @@
 
 Builds the input distribution for the QAE: ground states of H2 (STO-3G) at
 22 bond lengths in [0.4, 2.5] A. Verifies that the resulting (22, 16) state
-matrix has effective rank ~ 4, which is the geometric reason a 2-qubit code
-(4 amplitudes) can fit them. Also exercises the fidelity / partial-trace
+matrix has effective rank <= 4 (measured: 2, since every ground state is a
+superposition of |1100> and |0011>), which is the geometric reason a 2-qubit
+code (4 amplitudes) can fit them. Also exercises the fidelity / partial-trace
 helpers in `tier3/utils/states.py`.
 
 No training this week - this is pure infrastructure. The output is checked
@@ -59,9 +60,9 @@ def main():
     print(f"  effective rank (sigma > 1e-3) : {rank}")
     print(f"  variance captured by top 4    : "
           f"{(sing[:4] ** 2).sum() / (sing ** 2).sum():.6f}")
-    print( "  -> 4 dominant components means the entire dataset lives in a")
-    print( "     4-dim linear subspace of C^16. A 2-qubit code (also 4-dim)")
-    print( "     is exactly the right size to compress it.")
+    print(f"  -> {rank} dominant components means the entire dataset lives in a")
+    print(f"     {rank}-dim linear subspace of C^16. A 2-qubit code (4-dim)")
+    print( "     has room to spare.")
 
     section("3. Round-trip fidelity sanity check")
     f_self = state_overlap(states[0], states[0])
@@ -113,7 +114,7 @@ def main():
     assert abs(np.trace(rho_trash) - 1.0) < 1e-10
     assert abs(purity_code - purity_trash) < 1e-10, \
         "Schmidt symmetry: bipartite purities must match for a pure state"
-    print(f"  PASS: 22 H2 states built, effective dim 4, all fidelity / "
+    print(f"  PASS: 22 H2 states built, effective dim {rank}, all fidelity / "
           f"partial-trace checks green.")
 
 
