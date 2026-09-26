@@ -65,7 +65,11 @@ Two reasons consistent with how Tier 1 and Tier 2 ended:
 - Week 26 retrains (5 seeds × 2 classical AEs × 200 epochs): ~30 sec
 
 Total: ~22 min on a laptop CPU. Faster than the sum of weeks 23–26
-because we skip the per-week plot generation.
+mainly because the noise sweep runs 3 noise levels instead of 5, scores
+only the test split and has no random-encoder baseline (week 25 scores
+20 random encoders at every $p$), and week 26's QAE numbers reuse the
+week 24 training instead of retraining. Plotting is not what saves the
+time: the capstone even adds one training run for panel (a).
 
 ## What this is *not*
 
