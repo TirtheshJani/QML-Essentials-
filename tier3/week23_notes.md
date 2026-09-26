@@ -44,13 +44,16 @@ Reconstruction fidelity requires building $\rho_{\text{out}} = U^\dagger
 $\langle\psi|\rho_{\text{out}}|\psi\rangle$. PennyLane can't differentiate
 through the partial trace + density-matrix construction natively, so this
 would require either density-matrix simulation (`default.mixed`) or a
-SWAP-test ancilla. Both work but cost more — and Romero (2017) §III shows
-the trash-fidelity cost is a tight surrogate in the high-fidelity regime.
+SWAP-test ancilla. Both work but cost more, and the trash-fidelity cost
+already bounds reconstruction fidelity: for a pure input,
+$F_{\text{loc}}^2 \le F_{\text{recon}} \le F_{\text{loc}}$
+(`tier3/check_qae_bounds.py`).
 
 We **train on the trash-fidelity cost** and **report reconstruction fidelity**
 numerically (via `tier3.utils.states.reconstruction_fidelity`) on the
-finished encoder. If they disagree by more than a couple of percentage
-points, that signals the trash-fidelity cost is loose — a useful diagnostic.
+finished encoder. Because of that bound the two can differ by at most
+$F_{\text{loc}}(1 - F_{\text{loc}})$ per state, so comparing them checks
+the code, not the cost.
 The script prints both; the asserted gate is on reconstruction fidelity
 alone (mean > 0.93), and nothing asserts on the gap between the two.
 

@@ -78,15 +78,16 @@ $V(\boldsymbol\alpha)$ for the latent-space probe.
   the dataset has 22 states in a 2-D subspace. This split cannot show
   overfitting: the training states span that subspace, so the held-out
   fidelities follow from the training ones (see above).
-- **Trash-fidelity success but recon-failure** — high $P(\text{trash}=00)$
-  but low $F_{\text{recon}}$. This happens when the encoder learns to
-  zero out the trash *for one of the Schmidt sectors only*, leaving
-  the other sectors poorly encoded. The reconstruction fidelity check
-  catches it; the trash-fidelity cost alone wouldn't.
-- **Latent collapse** — a high-fidelity QAE that maps every $r$ to
-  almost the same code state. Spearman correlation does not catch this
-  (it ignores scale, and untrained encoders already score about 1); the
-  printed singular values of the latent features are the thing to check.
+- **Trash-fidelity success but recon failure** (high $P(\text{trash}=00)$,
+  low $F_{\text{recon}}$) cannot happen here. For a pure input,
+  $F_{\text{loc}}^2 \le F_{\text{recon}} \le F_{\text{loc}}$
+  (`tier3/check_qae_bounds.py`), so high trash fidelity forces high
+  reconstruction fidelity.
+- **Latent collapse** (a high-fidelity QAE that maps every $r$ to almost
+  the same code state) is ruled out by the same bound: the decoder would
+  then return almost the same state for every $r$, and the inputs are
+  not all close to one state, so reconstruction fidelity could not be
+  high for all of them.
 
 ## Output
 

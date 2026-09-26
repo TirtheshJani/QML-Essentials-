@@ -108,8 +108,9 @@ def local_fidelity(psi, encoder_unitary):
     The name is historical: one minus this is the Romero training cost,
     which is a global cost in Cerezo et al.'s (2021) terminology.
 
-    For pure-state inputs this is also a tight surrogate for the
-    reconstruction fidelity (equality in the perfect-compression limit).
+    For a pure input, local_fidelity**2 <= reconstruction_fidelity <=
+    local_fidelity (checked in tier3/check_qae_bounds.py), so the two
+    agree in the perfect-compression limit.
     """
     enc = encoder_unitary @ psi
     T = enc.reshape(DIM_CODE, DIM_TRASH)

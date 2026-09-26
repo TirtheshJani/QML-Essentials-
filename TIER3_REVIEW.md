@@ -47,9 +47,12 @@ at 0.9355. On this 2-D linear dataset that is interpolation, not
 generalization: the 11 training states span the subspace that holds the
 test states, and there both fidelities are fixed polynomials of the
 state, so held-out fidelity follows from training fidelity for any
-encoder. The mean gap between local (trash) fidelity and
-reconstruction fidelity in week 23 is 1.1 pp (0.9825 vs 0.9719), so the
-trash-fidelity cost was a tight surrogate.
+encoder. Reconstruction fidelity in week 23 is 1.1 pp below local
+(trash) fidelity (0.9719 vs 0.9825). That closeness is guaranteed, not
+found: for a pure input, $F_{\text{loc}}^2 \le F_{\text{recon}} \le
+F_{\text{loc}}$ (`tier3/check_qae_bounds.py`), so high trash fidelity
+forces high reconstruction fidelity, and the 5-seed means sit inside
+that range ($0.9825^2 = 0.9653$).
 
 ### 1.2 The latent arc is a property of the data, not of training
 
@@ -204,14 +207,24 @@ In rough order of expected impact:
    simplest plausible — real devices have correlated, non-Markovian,
    and gate-specific errors that this sweep doesn't capture.
 
-2. **Pick a non-linear dataset.** H₂ ground states are a 2-D linear
-   subspace, which is exactly the regime where a linear classical AE
-   wins by construction. The next experiment is a dataset that's
-   geometrically linear in *some* state-space representation but not
-   in amplitude space — e.g., random circuit states under a controlled
-   structural prior, or eigenstates of a non-quadratic Hamiltonian
-   like the transverse-field Ising model away from its critical
-   point. There the linear-AE oracle goes away.
+2. **Test the QAE on data access, not on compression power.** A
+   non-linear dataset would not help the QAE. Its encoder is a unitary
+   followed by discarding the trash qubits, so over any set of training
+   states its mean trash fidelity can never exceed the sum of the $2^k$
+   largest eigenvalues of the states' average density matrix ($k$ code
+   qubits, so 4 eigenvalues here). A linear map that projects onto the
+   matching $2^k$ eigenvectors (PCA with a $2^k$-dimensional complex
+   code) reaches exactly that sum, and reconstruction fidelity is at
+   most trash fidelity (§1.1). So a dataset that is not low-rank in
+   amplitude space would limit the QAE as much as the linear AE, and
+   would favour a nonlinear classical AE. `tier3/check_qae_bounds.py`
+   (not one of the week scripts) checks this on a curved 30-state family
+   with 13 eigenvalues above $10^{-6}$: an encoder built from the top 4
+   eigenvectors and the rank-4 projection both reach 0.6894, and no
+   Haar-random or RY+CNOT encoder goes above it. The case for a QAE is that it acts on the quantum
+   state without tomography (§3, §6). The next experiment should keep a
+   low-rank ensemble and test, at larger $n$, a setting where a
+   classical AE cannot read the amplitudes.
 
 3. **Train on the reconstruction cost directly.** We trained on the
    Romero trash-fidelity cost because it's cheap and differentiable on

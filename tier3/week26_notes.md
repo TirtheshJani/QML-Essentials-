@@ -42,10 +42,7 @@ We can't get the classical AE down to 16 parameters and still touch
 all 32 input axes — a $32 \to 1$ encoder has 32 parameters by itself.
 This **structural asymmetry** is itself one of the points of this
 week: the parameter-counting argument doesn't translate cleanly between
-quantum and classical models. The QAE's 16 real rotation-angle
-parameters generate a Lie group transformation on a 16-D Hilbert space,
-which is genuinely more expressive per parameter than 16 real linear
-weights.
+quantum and classical models.
 
 ## Expected ranking
 
@@ -62,10 +59,12 @@ than predicted and sits within one standard deviation of the QAE.
 
 This is not a story of quantum advantage on this specific dataset. The
 H₂ ground-state manifold is *too easy* for the classical baseline at
-unconstrained capacity. The QAE's interest comes from elsewhere:
+unconstrained capacity. The QAE's interest comes from elsewhere, and
+not from compression power: on any dataset its mean trash fidelity is
+at most the sum of the top 4 eigenvalues of the states' average density
+matrix, which a rank-4 linear projection reaches (`TIER3_REVIEW.md`
+§4.2). What is left is data access:
 
-- it doesn't *need* the dataset to be linear in amplitude space (week
-  27 capstone could swap the dataset for non-linear families);
 - it operates on the actual quantum state, which on real hardware
   cannot be exposed as an amplitude vector to a classical AE without
   expensive tomography;
