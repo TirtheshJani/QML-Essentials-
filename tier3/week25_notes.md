@@ -10,17 +10,16 @@
   \mathcal{D}_p(\rho) = (1 - p)\rho + \frac{p}{3}\big(X \rho X + Y \rho Y + Z \rho Z\big)
   $$
   applied after every parameterized gate, with $p \in \{0, 10^{-3}, 5\cdot10^{-3}, 10^{-2}, 2\cdot10^{-2}\}$. The 2-qubit CNOT contributes
-  $\mathcal{D}_p$ on each of its two wires, mirroring how IBM
-  characterizes 2-qubit gate errors.
+  $\mathcal{D}_p$ on each of its two wires.
 
-## Why this is the right noise sweep
+## Why this noise sweep
 
-Per-gate $p \approx 10^{-3}$ matches what IBM publishes for current
-superconducting qubits (median 1q error ~$3 \times 10^{-4}$, 2q error
-~$10^{-2}$). Our `p = 0.005` sits in the realistic mid-range; `p = 0.02`
-is near the brink-of-uselessness end. The sweep brackets actual
-hardware regimes — the *shape* of the curve (how fidelity decays with
-$p$) is the falsifiable prediction.
+The five values of $p$ are sweep points, not calibrated to any device:
+they run from no noise through $10^{-3}$ to $2\cdot10^{-2}$, with
+`p = 0.005` as the mid-sweep point where the pass gate sits. The *shape*
+of the curve (how fidelity decays with $p$) is the falsifiable
+prediction. Mapping $p$ onto a real device would need that device's
+calibration data and a gate-specific noise model.
 
 ## Random-encoder baseline
 
@@ -35,7 +34,7 @@ $$
 
 If $\Delta(p) \to 0$ at large $p$, training stops mattering. If
 $\Delta(p)$ stays > 30 pp through $p = 0.005$, the QAE is still
-extracting useful structure in the realistic-noise regime. The
+extracting useful structure at the mid-sweep point. The
 assertion at the bottom requires the latter.
 
 ## How training under noise differs

@@ -73,10 +73,9 @@ seeds:
 | 0.010 | 0.803 ± 0.011 | 0.207 | **+60 pp** |
 | 0.020 | 0.678 ± 0.010 | 0.224 | **+45 pp** |
 
-Per-gate $p \approx 5\times10^{-3}$ corresponds to current IBM 2-qubit
-gate error rates. At that operating point the trained QAE was 68 pp
-above a random encoder — not a small effect — but the absolute fidelity
-has dropped from 0.97 to 0.87. That delta would compound in any
+The $p$ values are sweep points, not calibrated to any device. At the
+mid-sweep point $p = 5\times10^{-3}$ the trained QAE was 68 pp above a
+random encoder, but the absolute fidelity has dropped from 0.97 to 0.87. That delta would compound in any
 downstream computation that fed the decoded state into another circuit.
 
 Interpreting the slope: the decline flattens as $p$ grows (about 23
