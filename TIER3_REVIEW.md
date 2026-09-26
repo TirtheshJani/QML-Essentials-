@@ -131,10 +131,10 @@ DOI 10.1038/s41467-021-21728-w, classify this QAE cost as global (the
 kind that shows barren plateaus even for shallow circuits as qubits are
 added) and contrast it with a local version that averages
 $P(\text{trash bit } j = 0)$ over single trash qubits. With 2 trash
-qubits the two bound each other, $C_L \le C_G \le 2\,C_L$ (a union
-bound over the two trash bits), so here the choice changes the cost by
-at most a factor of 2; it becomes a trainability question only for
-larger trash registers. The scripts still call $P(\text{trash} = 00)$
+qubits the two bound each other, $C_L \le C_G \le 2\,C_L$ (the upper
+bound is a union bound over the two trash bits), so here the choice
+changes the cost by at most a factor of 2; it becomes a trainability
+question only for larger trash registers. The scripts still call $P(\text{trash} = 00)$
 "local fidelity"; the name is historical.
 
 The unexplored region is $n \ge 6$. At $n = 6$ qubits, the week-14
@@ -260,9 +260,10 @@ plan with assertion gates; Tier 3 by *its own falsifiable
 predictions*, though not all of them could fail. The week-25 noise
 sweep had pre-registered pass criteria that could have failed (test
 fidelity > 0.85 at $p = 0.005$ and monotone decay in $p$; the script
-also requires more than 30 pp over random encoders at $p = 0.005$). Two other checks could not: 999 of 1000
-untrained encoders pass the week-24 Spearman gate (§1.2), and week 26's
-pre-registered criterion was only that the head-to-head table exists.
+also requires more than 30 pp over random encoders at $p = 0.005$).
+Two other checks could not: 999 of 1000 untrained encoders pass the
+week-24 Spearman gate (§1.2), and week 26's pre-registered criterion
+was only that the head-to-head table exists.
 The week-24 held-out split is weaker than it looks as well, since on
 this dataset held-out fidelity follows from training fidelity (§1.1).
 One pre-registered gate did fail: week 23's across-seed std
