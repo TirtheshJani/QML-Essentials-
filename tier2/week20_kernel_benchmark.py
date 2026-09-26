@@ -265,9 +265,9 @@ def main():
           f"{sum(r['wall_s'] for r in rows if r['kernel'] == 'RBF'):.3f} s")
 
     section(f"6. POST-HOC control: Gram spread, and inputs x {POSTHOC_SCALE}")
-    print(f"  Added after the [0, pi] results were written up; not a gate.")
-    print(f"  Off-diagonal entries of the training Gram matrix (ddof = 0),")
-    print(f"  and test accuracy, each averaged over the 3 n_train cells.")
+    print("  Added after the [0, pi] results were written up; not a gate.")
+    print("  Off-diagonal entries of the training Gram matrix (ddof = 0),")
+    print("  and test accuracy, each averaged over the 3 n_train cells.")
     print(f"  Reference, independent Haar-random 4-qubit states: mean "
           f"{HAAR_MEAN:.4f}, std {HAAR_STD:.4f}.")
     print(f"  {'':5s}  {'[0, pi] inputs (committed)':^28s}  "
