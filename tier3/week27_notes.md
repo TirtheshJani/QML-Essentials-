@@ -21,6 +21,10 @@ week 25 at $p = 0.005$ 0.8707 ± 0.0090, week 26 small AE 0.9811 ± 0.0211).
 | week 25: $p = 0.005$ test fidelity | $\ge 0.85 - 2\sigma$ | yes |
 | week 26: linear AE test fidelity (oracle) | $> 0.95$ | yes |
 
+The Spearman gate also passes for 999 of 1000 untrained encoders (the
+week-24 control, written to the CSV as the `UntrainedEncoder` row), so
+it checks the latent pipeline, not what training learned.
+
 5 seeds for everything except the noise sweep (3 seeds, since
 `default.mixed` is roughly 4× slower than `default.qubit`). The reduced
 noise grid is $\{0, 0.005, 0.02\}$ — the three points needed for the
