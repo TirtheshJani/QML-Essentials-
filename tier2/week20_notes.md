@@ -49,7 +49,7 @@ A factor of **~1800×** between them, with the quantum side losing on accuracy i
 
 ## 5. What would change the verdict
 
-The Schuld 2021 *PRL* "Quantum machine learning models are kernel methods" line of work makes the equivalence formal: any variational quantum classifier *is* a kernel method with the embedding's induced kernel. The question is therefore not "should I use a quantum kernel?" but "**does my data live in a structure this particular embedding represents well?**" Iris does not. Datasets where quantum kernels have been published as competitive include:
+Schuld, *Supervised quantum machine learning models are kernel methods*, arXiv:2101.11020 (2021), makes the equivalence formal: any variational quantum classifier *is* a kernel method with the embedding's induced kernel. The question is therefore not "should I use a quantum kernel?" but "**does my data live in a structure this particular embedding represents well?**" Iris does not. Datasets where quantum kernels have been published as competitive include:
 
 - **Quantum-generated data** (Huang et al. 2021, *Nat. Commun.*): synthetic labels engineered from a quantum process. The kernel is then optimal by construction.
 - **Datasets with explicit graph or sequence structure** for which an encoding can be designed (Skolik et al. 2023). Generic tabular data lacks such structure.
