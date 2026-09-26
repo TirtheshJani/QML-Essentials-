@@ -74,7 +74,7 @@ partial-trace implementation.
 ## Fidelity definitions used in Tier 3
 
 - **Pure-state overlap:** $F(\psi, \phi) = |\langle\psi | \phi\rangle|^2$.
-- **Local trash fidelity (Romero training cost):**
+- **Local trash fidelity (Romero training cost; global in Cerezo et al.'s 2021 terms, since the projector acts on all trash qubits):**
   $F_{\text{loc}}(\psi, U) = \langle U\psi |\, I_{\text{code}} \otimes \ket{0}\bra{0}_{\text{trash}}\, |U\psi \rangle$
   — i.e. probability of measuring the trash bits in $\ket{00}$ after
   encoding.

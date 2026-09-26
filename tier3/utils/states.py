@@ -103,7 +103,10 @@ def reduced_density_matrix(psi, keep_wires=CODE_WIRES):
 
 
 def local_fidelity(psi, encoder_unitary):
-    """Romero local cost: P(trash bits = 00) after encoding.
+    """Romero trash fidelity: P(trash bits = 00) after encoding.
+
+    The name is historical: one minus this is the Romero training cost,
+    which is a global cost in Cerezo et al.'s (2021) terminology.
 
     For pure-state inputs this is also a tight surrogate for the
     reconstruction fidelity (equality in the perfect-compression limit).

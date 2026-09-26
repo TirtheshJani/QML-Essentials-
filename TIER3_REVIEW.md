@@ -40,9 +40,9 @@ and 4 in week 23. Seeds 1 and 2 stop in a local minimum (0.9576 and
 pre-registered std < 0.02 gate; the script reports the miss rather than
 hiding it (`tier3/week23_notes.md`). The held-out gate passes: in week
 24, four seeds reconstruct the unseen bond lengths at 1.0000 and seed 2
-at 0.9355. The mean gap between local cost and reconstruction fidelity
-in week 23 is 1.1 pp (0.9825 vs 0.9719), so the local cost was a tight
-surrogate.
+at 0.9355. The mean gap between local (trash) fidelity and
+reconstruction fidelity in week 23 is 1.1 pp (0.9825 vs 0.9719), so the
+trash-fidelity cost was a tight surrogate.
 
 ### 1.2 The latent code recovered the bond-length axis
 
@@ -85,7 +85,7 @@ $0.02$) and stays milder than a naive exponential, which is consistent with
 the depolarizing channel's contribution to expectation values for
 shallow circuits ($\langle O\rangle \to (1-p)^{n_g} \langle O\rangle$
 with $n_g \approx 30$ gates would give a steeper curve; the milder
-slope here reflects the local-cost cost function being dominated by
+slope here reflects the trash-fidelity cost function being dominated by
 stochastic projection onto $\ket{0}^{\text{trash}}$ rather than the
 full state).
 
@@ -108,6 +108,20 @@ Tier 2 week-14 probe made the QAE trainable by construction. The
 pre-requisite worked exactly as predicted. We never had to react to a
 barren-plateau failure during training; we paid for it once at the
 ansatz-selection step.
+
+One caveat on the cost itself. The training cost
+$C_G = 1 - P(\text{trash} = 00)$ projects onto both trash qubits at
+once. Cerezo et al., *Cost function dependent barren plateaus in
+shallow parametrized quantum circuits*, Nat. Commun. 12, 1791 (2021),
+DOI 10.1038/s41467-021-21728-w, classify this QAE cost as global (the
+kind that shows barren plateaus even for shallow circuits as qubits are
+added) and contrast it with a local version that averages
+$P(\text{trash bit } j = 0)$ over single trash qubits. With 2 trash
+qubits the two bound each other, $C_L \le C_G \le 2\,C_L$ (a union
+bound over the two trash bits), so here the choice changes the cost by
+at most a factor of 2; it becomes a trainability question only for
+larger trash registers. The scripts still call $P(\text{trash} = 00)$
+"local fidelity"; the name is historical.
 
 The unexplored region is $n \ge 6$. At $n = 6$ qubits, the week-14
 probe measured Var ≈ $3 \times 10^{-2}$ at init — still trainable, but
@@ -186,11 +200,11 @@ In rough order of expected impact:
    point. There the linear-AE oracle goes away.
 
 3. **Train on the reconstruction cost directly.** We trained on the
-   Romero local cost because it's cheap and differentiable on
+   Romero trash-fidelity cost because it's cheap and differentiable on
    `default.qubit`. With `default.mixed` available, the full
    reconstruction-fidelity cost (encode → trace → re-inject → decode →
    overlap) is computable but slow. A side-by-side comparison of the
-   two cost functions on the same dataset would tighten the local-
+   two cost functions on the same dataset would tighten the trash-
    vs-recon-fidelity argument that Romero left implicit.
 
 4. **Add a SWAP-test estimator.** All fidelities here are computed by

@@ -1,4 +1,4 @@
-"""Quantum-autoencoder ansatz, Romero local cost, and a training loop.
+"""Quantum-autoencoder ansatz, Romero trash-fidelity cost, and a training loop.
 
 Encoder is a hardware-efficient ansatz of `n_layers` layers, each = RY on
 every qubit + nearest-neighbour CNOT ladder. This restricts to real-valued
@@ -7,9 +7,14 @@ matches the barren-plateau probe ansatz from `tier2/utils/barren.py` so
 the trainability behaviour is consistent across tiers.
 
 Training uses PennyLane's autograd interface with `qml.AdamOptimizer`.
-The cost is the Romero local fidelity averaged over a training batch:
+The cost is the Romero trash fidelity averaged over a training batch:
 
   C(alpha) = 1 - (1/N) * sum_i  P_i(trash bits = 00 | alpha)
+
+The code calls P(trash = 00) "local fidelity" (states.local_fidelity), but
+the cost is global in the sense of Cerezo et al., Nat. Commun. 12, 1791
+(2021), DOI 10.1038/s41467-021-21728-w: the projector acts on all trash
+qubits at once, not one qubit at a time.
 
 Gradient of probabilities is supported by `default.qubit` with backprop, so
 each gradient step costs one forward pass per training example.
@@ -123,7 +128,7 @@ def _apply_cnot(control, target, M):
 
 
 def romero_cost(qnode, params, states):
-    """Mean local fidelity loss: 1 - mean_i P(trash = 00)."""
+    """Mean trash-fidelity loss: 1 - mean_i P(trash = 00)."""
     total = 0.0
     for psi in states:
         probs = qnode(psi, params)

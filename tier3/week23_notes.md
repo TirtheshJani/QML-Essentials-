@@ -6,10 +6,15 @@
   $V(\boldsymbol\alpha) = \prod_{L=1}^{4} \big(\bigotimes_{w=0}^{3} R_Y(\alpha_{Lw})\big)\, U_{\text{CNOT-ladder}}$.
   16 trainable parameters total.
 - **Wire layout:** code = [0, 1], trash = [2, 3] (week 22 convention).
-- **Cost:** Romero "local" trash-fidelity loss
+- **Cost:** Romero trash-fidelity loss
   $$
   C(\boldsymbol\alpha) = 1 - \frac{1}{N} \sum_{i=1}^{N} P_i(\text{trash} = 00 \mid \boldsymbol\alpha).
   $$
+  The scripts call $P(\text{trash} = 00)$ "local fidelity", but the
+  projector acts on both trash qubits at once, so in the terminology of
+  Cerezo et al., *Cost function dependent barren plateaus in shallow
+  parametrized quantum circuits*, Nat. Commun. 12, 1791 (2021),
+  DOI 10.1038/s41467-021-21728-w, this is a global cost.
 - **Optimizer:** PennyLane's `AdamOptimizer`, `lr = 0.05`, 200 epochs.
 - **Seeds:** 0..4 (Tier 2 review item 6 — every headline gets mean ± std).
 
@@ -32,7 +37,7 @@ Two constraints, one design:
 So depth 4 is the sweet spot: expressive enough for this dataset, not
 yet stuck on the plateau.
 
-## Why local cost (not reconstruction cost)
+## Why the trash-fidelity cost (not reconstruction cost)
 
 Reconstruction fidelity requires building $\rho_{\text{out}} = U^\dagger
 (\rho_{\text{code}} \otimes \ket{0}\bra{0}) U$ and computing
@@ -40,12 +45,12 @@ $\langle\psi|\rho_{\text{out}}|\psi\rangle$. PennyLane can't differentiate
 through the partial trace + density-matrix construction natively, so this
 would require either density-matrix simulation (`default.mixed`) or a
 SWAP-test ancilla. Both work but cost more — and Romero (2017) §III shows
-the local cost is a tight surrogate in the high-fidelity regime.
+the trash-fidelity cost is a tight surrogate in the high-fidelity regime.
 
-We **train on local cost** and **report reconstruction fidelity**
+We **train on the trash-fidelity cost** and **report reconstruction fidelity**
 numerically (via `tier3.utils.states.reconstruction_fidelity`) on the
 finished encoder. If they disagree by more than a couple of percentage
-points, that signals the local cost is loose — a useful diagnostic, and
+points, that signals the trash-fidelity cost is loose — a useful diagnostic, and
 the assert at the bottom catches it.
 
 ## Inline barren-plateau monitoring

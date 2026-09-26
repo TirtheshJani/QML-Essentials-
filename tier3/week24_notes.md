@@ -63,11 +63,11 @@ $V(\boldsymbol\alpha)$ for the latent-space probe.
   the dataset has 22 states living in a 2-D subspace, so memorization
   is geometrically possible. The held-out evaluation rules it out (or
   confirms it, depending on how training goes).
-- **Local-cost-success but recon-failure** — high $P(\text{trash}=00)$
+- **Trash-fidelity success but recon-failure** — high $P(\text{trash}=00)$
   but low $F_{\text{recon}}$. This happens when the encoder learns to
   zero out the trash *for one of the Schmidt sectors only*, leaving
   the other sectors poorly encoded. The reconstruction fidelity check
-  catches it; the local cost alone wouldn't.
+  catches it; the trash-fidelity cost alone wouldn't.
 - **Latent collapse** — a high-fidelity QAE that maps every $r$ to
   almost the same code state. Spearman correlation < 0.5 catches this.
 

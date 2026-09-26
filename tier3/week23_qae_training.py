@@ -1,8 +1,9 @@
-"""Week 23 - Train the quantum autoencoder with Romero local cost.
+"""Week 23 - Train the quantum autoencoder with the Romero trash-fidelity cost.
 
 Trains the 4-qubit QAE on the H2 dataset from week 22 (full 22 states used
 as training data here; week 24 introduces the train/test split). Loss is
-the Romero local cost - one minus the mean P(trash = |00>) over the batch.
+the Romero trash-fidelity cost - one minus the mean P(trash = |00>) over
+the batch.
 
 Inline barren-plateau monitoring (Tier 2 review item 4): we log the
 gradient norm at epoch 0 and every 50 epochs to confirm we are not on the
@@ -66,7 +67,7 @@ def main():
     print(f"  training set            : {len(states)} states (full curve)")
     print(f"  encoder ansatz          : RY + CNOT ladder, "
           f"{N_LAYERS} layers, {N_LAYERS * 4} trainable params")
-    print(f"  cost                    : Romero local "
+    print(f"  cost                    : Romero trash fidelity "
           f"= 1 - mean P(trash = |00>)")
     print(f"  optimizer               : Adam(lr={LR}), {N_EPOCHS} epochs, "
           f"seeds {SEEDS}")
@@ -135,7 +136,7 @@ def main():
         losses = [e[1] for e in h]
         ax.plot(eps, losses, label=f"seed {seed}", alpha=0.7)
     ax.set_xlabel("epoch")
-    ax.set_ylabel("Romero local cost  $1 - \\langle P(\\mathrm{trash}=00)\\rangle$")
+    ax.set_ylabel("Romero trash-fidelity cost  $1 - \\langle P(\\mathrm{trash}=00)\\rangle$")
     ax.set_yscale("log")
     ax.legend(loc="upper right")
     ax.set_title("Tier 3 / week 23: QAE training, 5 seeds")

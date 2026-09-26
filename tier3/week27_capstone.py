@@ -267,7 +267,7 @@ def main():
     ax.plot([e[0] for e in history_seed0], [e[1] for e in history_seed0])
     ax.set_yscale("log")
     ax.set_xlabel("epoch")
-    ax.set_ylabel("Romero local cost")
+    ax.set_ylabel("Romero trash-fidelity cost")
     ax.set_title("(a) QAE training loss, seed = 0")
 
     # (0, 1) latent trajectory

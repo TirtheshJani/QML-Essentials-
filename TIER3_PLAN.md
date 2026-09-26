@@ -59,7 +59,7 @@ of Tier 2's tabular-data fight.
   trainable regime per the week 14 / week 21 barren-plateau probe.
 - **Dataset:** H₂ ground states ψ(r) for r ∈ {0.4, 0.5, …, 2.5} Å. Generated
   with `tier2/utils/chem.py` so we exercise the Tier 2 pipeline.
-- **Cost function:** Romero local cost — `1 − E[P(trash = 00)]` over the
+- **Cost function:** Romero trash-fidelity cost — `1 − E[P(trash = 00)]` over the
   training distribution.
 - **Pass criteria:** assertion-gated in every script, mirroring
   `tier1/week8_checkpoint_bell_grover.py:151–154`.
@@ -118,7 +118,7 @@ The actual QAE training run. This is where the model is born.
 
 - 4-qubit hardware-efficient encoder, depth = 4 layers (16 trainable
   parameters — well below the trainable cliff measured in week 14).
-- Romero local cost: `C(α) = 1 − (1/N) Σ_i P(trash bits = 0 | input ψ_i)`
+- Romero trash-fidelity cost: `C(α) = 1 − (1/N) Σ_i P(trash bits = 0 | input ψ_i)`
   computed via `qml.probs(wires=trash_wires)`.
 - Adam, lr = 0.05, 200 epochs, 5 seeds.
 - **Barren-plateau monitoring inline:** log gradient variance at epoch 0

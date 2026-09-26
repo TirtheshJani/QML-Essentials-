@@ -52,7 +52,7 @@ weights.
 From the dataset's geometric structure:
 
 1. Linear AE → ~1.0 (oracle on a linear subspace)
-2. QAE → 0.95 ± few pp (limited by the local-cost surrogate gap)
+2. QAE → 0.95 ± few pp (limited by the trash-fidelity surrogate gap)
 3. Small nonlinear AE → 0.85 ± noise (small, has to learn)
 
 Measured (pinned `requirements.txt`, 5 seeds, test reconstruction

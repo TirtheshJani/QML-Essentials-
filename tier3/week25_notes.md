@@ -3,7 +3,7 @@
 ## What changed
 
 - Device: `default.qubit` → `default.mixed` (density-matrix simulator).
-- Cost: same Romero local cost, but now $P(\text{trash} = 00)$ is
+- Cost: same Romero trash-fidelity cost, but now $P(\text{trash} = 00)$ is
   computed on a *mixed* state, not a pure one.
 - Noise model: a single-qubit depolarizing channel
   $$

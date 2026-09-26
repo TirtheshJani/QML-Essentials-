@@ -153,7 +153,9 @@ fidelity / Uhlmann-fidelity helpers (`tier3/utils/states.py`).
 
 ### 3B. QAE training + generalization (weeks 23–24) ✓
 4-qubit, 16-parameter, depth-4 RY+CNOT encoder trained on the Romero
-local cost; 5-seed mean-±-std reporting; held-out generalization +
+trash-fidelity cost (a global cost in the terminology of
+[Cerezo et al. 2021](https://doi.org/10.1038/s41467-021-21728-w));
+5-seed mean-±-std reporting; held-out generalization +
 latent-space monotonicity (Spearman-ρ test on $r$ vs PC1 of $\rho_{\text{code}}$).
 
 ### 3C. Noise robustness (week 25) ✓
