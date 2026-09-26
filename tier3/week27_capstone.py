@@ -1,20 +1,23 @@
 """Week 27 - Tier 3 capstone.
 
-Single end-to-end script that re-runs the full pipeline at 5 seeds,
-saves a results CSV and a 2x2 figure panel, and asserts every
-headline number from weeks 23-26 reproduces within 2 standard
-deviations.
+Single end-to-end script that re-runs weeks 23-26 at 5 seeds (3 for the
+noise sweep), saves a results CSV and a 2x2 figure panel, and re-checks
+the weekly pass gates, loosened by 2 standard deviations of this run.
+It does not compare its numbers with the weekly scripts' output.
 
 Pipeline:
   1. Build H2 ground-state dataset (week 22).
-  2. Train QAE noiseless on train half, evaluate on test half (week 23-24).
+  2. Train QAE noiseless on all 22 states (week 23), then on the train
+     half with evaluation on the test half (week 24).
   3. Re-train QAE under depolarizing noise (week 25; reduced-grid sweep).
   4. Train Linear AE and small nonlinear AE classical baselines (week 26).
   5. Aggregate and write tier3/week27_summary.csv + tier3/week27_results.png.
 
-Pass criteria are the original weekly gates, evaluated on this consolidated
-run. If anything regresses by more than 2 sigma the script fails its
-assertions.
+Pass criteria are weekly gates evaluated on this consolidated run:
+mean - threshold > -2 std for week 23 (0.95), week 24 test recon (0.85)
+and week 25 at p = 0.005 (0.85), plus |Spearman| > 0.9 (week 24) and
+linear AE > 0.95 (week 26), unloosened. The small AE and p = 0 / 0.02
+are reported but not gated.
 """
 
 import os
@@ -314,26 +317,26 @@ def main():
     print(f"  saved {PNG_PATH}")
 
     section("Checkpoint assertions")
-    # week 23 reproduction
+    # week 23 gate (mean > 0.95), loosened by 2 sigma
     assert train_loc_full.mean() > 0.95 - 2 * train_loc_full.std(), \
         f"week 23 regression: full-curve local fid {train_loc_full.mean():.4f}"
-    # week 24 reproduction
+    # week 24 gates (test recon > 0.85 loosened by 2 sigma; |Spearman| > 0.9)
     assert qae_test_rec.mean() > 0.85 - 2 * qae_test_rec.std(), \
         f"week 24 regression: test recon {qae_test_rec.mean():.4f}"
     assert abs(rho_pc1) > 0.9, \
         f"latent monotonicity broken: |Spearman| = {abs(rho_pc1):.3f}"
-    # week 25 reproduction
+    # week 25 gate (p = 0.005 test fid > 0.85), loosened by 2 sigma
     test_at_005 = noise_table[0.005]
     assert test_at_005.mean() > 0.85 - 2 * test_at_005.std(), \
         f"week 25 regression: p=0.005 test fid {test_at_005.mean():.4f}"
-    # week 26 reproduction
+    # week 26 gate (linear AE > 0.95)
     assert lin_test.mean() > 0.95, \
         f"linear AE oracle broken: {lin_test.mean():.4f}"
     # artifacts exist
     assert os.path.exists(CSV_PATH)
     assert os.path.exists(PNG_PATH)
-    print(f"  PASS: capstone reproduces every weekly headline within 2 sigma; "
-          f"CSV + 4-panel figure saved.")
+    print(f"  PASS: weekly pass gates hold on this run (weeks 23-25 gates "
+          f"loosened by 2 sigma); CSV + 4-panel figure saved.")
 
 
 if __name__ == "__main__":
