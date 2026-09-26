@@ -20,10 +20,10 @@ reruns weeks 23-26 and writes the QAE and classical-AE rows to
 
 | tier 3 result (test = 11 held-out bond lengths) | value |
 |------|------:|
-| QAE local fidelity, all 22 states, 5 seeds (week 23) | 0.9825 ± 0.0214 |
+| QAE trash fidelity P(trash=00), all 22 states, 5 seeds (week 23) | 0.9825 ± 0.0214 |
 | QAE test reconstruction fidelity, 5 seeds (week 24) | 0.9871 ± 0.0258 |
 | Spearman(r, latent PC1), seed 0 (week 24); 1000 untrained encoders give median abs. value 1.000 | -1.000 |
-| QAE test local fidelity at depolarizing p = 0.005, 3 seeds (week 25) | 0.8707 ± 0.0090 (20 random encoders: 0.2606 ± 0.1111) |
+| QAE test trash fidelity P(trash=00) at depolarizing p = 0.005, 3 seeds (week 25) | 0.8707 ± 0.0090 (20 random encoders: 0.2606 ± 0.1111) |
 | Linear classical AE, 256 params, test reconstruction (week 26) | 1.0000 ± 0.0000 |
 | Nonlinear classical AE, 136 params, test reconstruction (week 26) | 0.9811 ± 0.0211 |
 
@@ -236,9 +236,11 @@ tiers:
 - `.github/workflows/ci.yml` runs every week script, one job per tier.
 
 Each tier directory holds flat `weekN_<topic>.py` + `weekN_notes.md`
-files plus a `utils/` submodule for shared helpers. Every week from
-week 8 on is a self-checking script: assertion-gated `main()`, exits
-non-zero if any gate fails; tier 1 weeks 1-7 are print-only
+files; tiers 2 and 3 also hold a `utils/` submodule for shared helpers,
+and `tier3/check_qae_bounds.py` is a numerical check of two QAE fidelity
+bounds that the loop below does not run. Every week from week 8 on is
+a self-checking script: assertion-gated `main()`, exits non-zero if
+any gate fails; tier 1 weeks 1-7 are print-only
 walkthroughs that fail only if they crash. One gate is reported rather
 than asserted: week 23's across-seed std gate, which the first full run
 missed, prints `MISSED pre-registered gate` (see
