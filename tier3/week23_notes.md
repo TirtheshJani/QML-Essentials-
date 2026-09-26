@@ -80,9 +80,10 @@ first full run.
 
 ## Reproducibility
 
-5 seeds × 200 epochs × 22 states × ~3 ms/forward ≈ 7 minutes wall-clock
-on `default.qubit`. Writeup target is `mean fidelity ± std`, with the
-hard pass criteria:
+5 seeds × 200 epochs × 22 states took about 7 to 8 minutes wall-clock
+on `default.qubit` with the pinned requirements (about 20 ms per state
+per epoch, each epoch a forward and a backward pass). Writeup target
+is `mean fidelity ± std`, with the hard pass criteria:
 
 - mean local fidelity > 0.95
 - std across seeds < 0.02
