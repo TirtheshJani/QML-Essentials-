@@ -141,7 +141,8 @@ def reconstruction_fidelity(psi, encoder_unitary):
 def uhlmann_fidelity(rho, sigma):
     """F(rho, sigma) = (Tr sqrt(sqrt(rho) sigma sqrt(rho)))^2.
 
-    Used by week 25 to compare reconstructed density matrices under noise.
+    Not used by the week scripts: week 25 reports P(trash = 00) on the
+    noisy device instead.
     """
     from scipy.linalg import sqrtm
     sr = sqrtm(rho)
@@ -155,8 +156,9 @@ def effective_dimension(states, threshold=1e-6):
     """Number of singular values of the (k, 16) state matrix above `threshold`.
 
     Geometric upper bound on how many qubits a code must span to represent
-    the dataset losslessly. For H2 across r in [0.4, 2.5] A this is 4 — i.e.
-    a 2-qubit code is enough.
+    the dataset losslessly. For H2 across r in [0.4, 2.5] A this is 2 (week 22
+    measures singular values 4.584 and 0.993, the rest below 1e-15), so a
+    2-qubit code (4-dim) has room to spare.
     """
     s = np.linalg.svd(states, compute_uv=False)
     return int(np.sum(s > threshold)), s

@@ -68,4 +68,4 @@ follow-up.
 
 The cross-tier writeup (`TIER3_REVIEW.md`) is the place where the
 *meaning* of these numbers is discussed. Week 27's job is to produce
-the numbers and the figure; week's review interprets them.
+the numbers and the figure; the review interprets them.

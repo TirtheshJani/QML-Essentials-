@@ -50,8 +50,9 @@ the trash-fidelity cost is a tight surrogate in the high-fidelity regime.
 We **train on the trash-fidelity cost** and **report reconstruction fidelity**
 numerically (via `tier3.utils.states.reconstruction_fidelity`) on the
 finished encoder. If they disagree by more than a couple of percentage
-points, that signals the trash-fidelity cost is loose — a useful diagnostic, and
-the assert at the bottom catches it.
+points, that signals the trash-fidelity cost is loose — a useful diagnostic.
+The script prints both; the asserted gate is on reconstruction fidelity
+alone (mean > 0.93), and nothing asserts on the gap between the two.
 
 ## Inline barren-plateau monitoring
 

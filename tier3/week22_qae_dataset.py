@@ -50,7 +50,7 @@ def main():
     print(f"  norms (should all be 1.0): "
           f"min {norms.min():.6f}  max {norms.max():.6f}")
     print(f"  energies range: {energies.min():.4f} -> {energies.max():.4f} Ha")
-    print(f"  E(r=0.74) = {energies[np.argmin(np.abs(R_GRID - 0.7))]:.4f} Ha "
+    print(f"  E(r=0.70) = {energies[np.argmin(np.abs(R_GRID - 0.7))]:.4f} Ha "
           f"(near equilibrium)")
 
     section("2. Effective dimension via SVD")

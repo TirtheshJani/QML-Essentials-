@@ -83,7 +83,7 @@ partial-trace implementation.
   — the textbook QAE fidelity of the full encode → discard → re-inject
   $\ket{00}$ → decode protocol.
 - **Uhlmann fidelity (mixed states):**
-  $F(\rho, \sigma) = \big(\mathrm{Tr}\sqrt{\sqrt\rho \, \sigma \, \sqrt\rho}\,\big)^2$ — used in week 25 for noisy reconstructions.
+  $F(\rho, \sigma) = \big(\mathrm{Tr}\sqrt{\sqrt\rho \, \sigma \, \sqrt\rho}\,\big)^2$, implemented in `tier3/utils/states.py` but not used by the week scripts (week 25 reports $P(\text{trash} = 00)$ on the noisy device instead).
 
 In the perfect-compression limit ($U\ket\psi = \ket{\phi_{\text{code}}}\ket{0}_{\text{trash}}$), all four metrics agree at 1. Local fidelity and
 reconstruction fidelity diverge only when compression is imperfect, which
