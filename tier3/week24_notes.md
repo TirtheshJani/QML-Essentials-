@@ -4,8 +4,8 @@
 
 Week 23 trained on the full 22-state $r$-curve. Week 24 splits it
 50 / 50: train on the 11 even-indexed $r$ values, evaluate on the 11
-odd-indexed $r$ values that the model never saw. This is the smallest
-possible "is the QAE doing more than memorizing the training set?" test.
+odd-indexed $r$ values that the model never saw. In general a split
+like this asks whether a model does more than memorize its training set.
 
 On this dataset it tests interpolation, not generalization. The 11
 training states already span the 2-D subspace that holds the 11 test
@@ -22,9 +22,10 @@ at $r = 2.5$, and a small gap is expected by construction.
 Two numbers, each averaged over 5 seeds:
 
 - **Local fidelity gap:** $C_{\text{train}} - C_{\text{test}}$, where $C$
-  is the trash-zero probability. If the QAE memorizes individual
-  training states, this gap will be large; if it discovers a generic
-  encoding for the H₂ ground-state manifold, the gap will be small.
+  is the trash-zero probability. On this dataset the held-out
+  fidelities are fixed by the training ones (see above), so the gap is
+  expected to be small for any encoder; it checks the pipeline, not
+  memorization.
 - **Reconstruction fidelity gap:** same idea but with the full
   $F_{\text{recon}}$ from week 22.
 
