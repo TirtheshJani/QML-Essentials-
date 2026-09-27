@@ -48,14 +48,14 @@ So at 4 qubits the accuracy drop is a bandwidth effect: the input scale decides 
 
 ## 4. The runtime accounting
 
-Total wall-clock across the sweep:
+Total wall-clock across the sweep, summed from the `wall_s` column of the committed `week20_results.csv` (wall time varies by run, and the loop rewrites that column each time):
 
 | kernel | total time |
 |-------|-----------:|
-| quantum | 124.9 s |
-| RBF | 0.07 s |
+| quantum | 121.1 s |
+| RBF | 0.099 s |
 
-A factor of **~1800×** between them, with the quantum side losing on accuracy in every cell. On real hardware the gap widens further: every fidelity needs $\sim 10^4$ shots for $10^{-2}$ precision, taking the per-Gram-matrix cost from 30 s of simulation to minutes of QPU time.
+Roughly **three orders of magnitude** between them (about 1200× in the committed CSV; the RBF total is only about 0.1 s, so the ratio is not stable between runs), with the quantum side losing on accuracy in every cell. The quantum time includes computing the Gram matrices; the RBF time covers only cross-validation and the final fit, since its kernel matrix is computed before the timer starts. On real hardware the gap widens further: every fidelity needs $\sim 10^4$ shots for $10^{-2}$ precision, taking the cost from seconds of simulation per cell (2 to 37 s in the committed CSV) to minutes of QPU time.
 
 ## 5. What would change the verdict
 

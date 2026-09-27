@@ -49,7 +49,7 @@ The largest gap in tier 2, at the input scaling the scripts used. A post-hoc con
 | worst Q (d=3, n=80) | 0.50 | 1.00 |
 | **mean across all 9 cells** | **0.74** | **1.00** |
 
-Quantum wins **0 of 9 cells.** Wall-clock cost: 125 s for the quantum sweep vs 0.07 s for RBF — a factor of ~1800. At the committed input scaling (MinMax to $[0, \pi]$) the quantum mean test accuracy fell as `reps` grew from 1 to 3 (0.85 → 0.77 → 0.62). Accuracy alone does not say why. Week 20 now also runs a post-hoc control, added after these results were written up and not a pass gate: it prints the off-diagonal spread of each training Gram matrix, and reruns the quantum sweep with the ZZ-map inputs multiplied by 0.1 (one factor, taken from a review probe, not tuned on test data). Means over the three $n_{tr}$ cells:
+Quantum wins **0 of 9 cells.** Wall-clock cost: about 120 s for the quantum sweep vs about 0.1 s for RBF, roughly three orders of magnitude (121.1 s and 0.099 s in the committed `tier2/week20_results.csv`; wall time varies by run). At the committed input scaling (MinMax to $[0, \pi]$) the quantum mean test accuracy fell as `reps` grew from 1 to 3 (0.85 → 0.77 → 0.62). Accuracy alone does not say why. Week 20 now also runs a post-hoc control, added after these results were written up and not a pass gate: it prints the off-diagonal spread of each training Gram matrix, and reruns the quantum sweep with the ZZ-map inputs multiplied by 0.1 (one factor, taken from a review probe, not tuned on test data). Means over the three $n_{tr}$ cells:
 
 | reps | $[0, \pi]$ inputs: Gram off-diagonal std | test acc | inputs × 0.1 (post-hoc): off-diagonal std | test acc |
 |---:|---:|---:|---:|---:|
