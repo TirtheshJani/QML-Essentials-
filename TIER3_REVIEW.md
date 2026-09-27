@@ -275,8 +275,9 @@ In rough order of expected impact:
    complex code) reaches exactly that sum, and reconstruction fidelity
    is at most trash fidelity (§1.1). So a dataset that is not low-rank
    in amplitude space would limit the QAE as much as the linear AE, and
-   would favour a nonlinear classical AE. `tier3/check_qae_bounds.py`
-   (not one of the week scripts) checks this on a curved 30-state family
+   might favour a nonlinear classical AE (not tested here).
+   `tier3/check_qae_bounds.py` (not one of the week scripts) checks
+   this on a curved 30-state family
    with 13 eigenvalues above $10^{-6}$: an encoder built from the top 4
    eigenvectors and the rank-4 projection both reach 0.6894, and no
    Haar-random or RY+CNOT encoder goes above it. The case for a QAE is
