@@ -135,10 +135,11 @@ def main():
         verdict = "RBF wins"
     else:
         verdict = "tied (within 1 pp)"
-    print(f"  Iris setosa-vs-versicolor is linearly separable; both kernels")
-    print(f"  saturate near 1.00 with the right regularisation. The quantum")
-    print(f"  kernel costs ~{40*40 + 20*40} circuit evaluations vs near-zero for RBF;")
-    print(f"  there is no runtime regime in which the quantum side wins here.")
+    print("  Iris setosa-vs-versicolor is linearly separable. Held-out test")
+    print(f"  accuracy: RBF {test_r:.2f}, quantum kernel {test_q:.2f} (inputs")
+    print("  MinMax-scaled to [0, pi]). The quantum kernel costs")
+    print(f"  ~{40*40 + 20*40} circuit evaluations vs near-zero for RBF; there is")
+    print("  no runtime regime in which the quantum side wins here.")
     print(f"  Verdict on this run: {verdict} (Q={test_q:.4f} vs C={test_r:.4f}).")
     print(f"  Week 20 sweeps depth and dataset size to look for any tipping point.")
 
