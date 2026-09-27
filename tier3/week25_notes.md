@@ -9,7 +9,9 @@
   $$
   \mathcal{D}_p(\rho) = (1 - p)\rho + \frac{p}{3}\big(X \rho X + Y \rho Y + Z \rho Z\big)
   $$
-  applied after every parameterized gate, with $p \in \{0, 10^{-3}, 5\cdot10^{-3}, 10^{-2}, 2\cdot10^{-2}\}$. The 2-qubit CNOT contributes
+  (PennyLane's `DepolarizingChannel` convention; equivalently
+  $(1 - 4p/3)\rho + (4p/3)\,I/2$, so the Bloch vector shrinks by
+  $1 - 4p/3$) applied after every gate, with $p \in \{0, 10^{-3}, 5\cdot10^{-3}, 10^{-2}, 2\cdot10^{-2}\}$. The 2-qubit CNOT contributes
   $\mathcal{D}_p$ on each of its two wires.
 
 ## Why this noise sweep

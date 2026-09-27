@@ -102,16 +102,19 @@ Interpreting the slope: the decline flattens as $p$ grows (about 23
 fidelity per unit $p$ near $p = 0$, about 13 between $p = 0.01$ and
 $0.02$). That is what exponential decay toward a floor looks like: as
 the noise grows the trash register tends to the maximally mixed state,
-so $P(\text{trash} = 00)$ decays toward $1/4$, not toward 0. With that
-floor,
-$F(p) = 1/4 + (F(0) - 1/4)(1 - p)^n$ gives, for each noisy point in the
-table, $n = \ln[(F(p) - 1/4)/(F(0) - 1/4)] / \ln(1 - p)$ = 32, 30, 26
-and 26 at $p$ = 0.001, 0.005, 0.01 and 0.02. So the curve is consistent
-with a plain exponential in about 26 to 32 channels. The circuit inserts
-40 depolarizing channels (in each of the 4 layers, one after each of the
-4 RY gates and two after each of the 3 CNOTs), and the model is
-retrained at each $p$, so this is a consistency check, not a model of
-the mechanism.
+so $P(\text{trash} = 00)$ decays toward $1/4$, not toward 0.
+PennyLane's `DepolarizingChannel(p)` is
+$(1 - p)\rho + \tfrac{p}{3}(X\rho X + Y\rho Y + Z\rho Z)$, which shrinks
+the Bloch vector by $1 - 4p/3$. With that convention and the floor,
+$F(p) = 1/4 + (F(0) - 1/4)(1 - 4p/3)^n$ gives, for each noisy point in
+the table, $n = \ln[(F(p) - 1/4)/(F(0) - 1/4)] / \ln(1 - 4p/3)$ = 24,
+22, 20 and 19 at $p$ = 0.001, 0.005, 0.01 and 0.02 (with $(1 - p)^n$
+instead, 32, 30, 26 and 26). So the curve is consistent with a plain
+exponential in about 19 to 24 full-strength channels, with $n$ falling
+as $p$ grows. The circuit inserts 40 depolarizing channels (in each of
+the 4 layers, one after each of the 4 RY gates and two after each of
+the 3 CNOTs), and the model is retrained at each $p$, so this is a
+consistency check, not a model of the mechanism.
 
 ## 2. Where barren plateaus showed up — and where they didn't
 
