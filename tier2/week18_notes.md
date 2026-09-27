@@ -22,19 +22,19 @@ Parameter `reps=2` doubles the ZZ block once, producing a 4-qubit, ~30-depth cir
 
 ## 3. Computing the Gram matrix
 
-`FidelityQuantumKernel(feature_map=fm)` evaluates $K_{ij} = |\langle 0|U_{ZZ}^\dagger(x_i)U_{ZZ}(x_j)|0\rangle|^2$ — a single fidelity per pair, simulated exactly on `default.qubit`. Cost: $\mathcal O(n^2)$ circuit evaluations. At $n = 40$ this takes ~5 s on a laptop.
+`FidelityQuantumKernel(feature_map=fm)` evaluates $K_{ij} = |\langle 0|U_{ZZ}^\dagger(x_i)U_{ZZ}(x_j)|0\rangle|^2$ — a single fidelity per pair, computed exactly from statevectors (no shot noise). Cost: $\mathcal O(n^2)$ circuit evaluations. At $n = 40$ this takes ~5 s on a laptop.
 
 Sanity properties:
 
 - **Symmetry.** $K_{ij} = K_{ji}$ to within $10^{-16}$ (statevector simulation).
 - **Diagonal $= 1$.** Each $|\phi(x)\rangle$ is a normalised pure state.
-- **PSD.** $K = \Phi^\dagger \Phi$ where $\Phi_i = |\phi(x_i)\rangle$ — automatic from construction. Empirically $\lambda_{\min}(K) = 0.28$ on this 40-point set, well clear of the $-10^{-8}$ numerical-PSD threshold.
+- **PSD.** $K = \Phi^\dagger \Phi$ where $\Phi_i = |\phi(x_i)\rangle$ — automatic from construction. Empirically $\lambda_{\min}(K) = 0.107$ on this 40-point set, well clear of the $-10^{-8}$ numerical-PSD threshold.
 
-## 4. The first whiff of kernel concentration
+## 4. Within- vs between-class similarity
 
-Mean within-class similarity is **0.0788**; mean between-class similarity is **0.0733**. The gap is just 0.6 pp. That tiny separation is what the SVM in week 19 has to amplify into a decision boundary. Compare to a trivial RBF kernel on the same standardised features, where within-class fidelity is ~0.6 and between-class ~0.1 — the quantum kernel is *less* discriminative on average.
+Mean within-class similarity (off-diagonal) is **0.0849**; mean between-class similarity is **0.0656**. The gap is 1.9 pp. That small separation is what the SVM in week 19 has to turn into a decision boundary.
 
-This looks like the **kernel concentration** phenomenon (Thanasilp et al., *Nat. Commun.* 15 (2024), DOI 10.1038/s41467-024-49287-w): for sufficiently expressive feature maps, $K_{ij}$ concentrates around a constant value, exponentially in the number of qubits $n$, and the SVM is left fitting noise. The harder Iris pair (1 vs 2) shows it more starkly — `reps=2` there gives within − between = $-0.0001$, *negative*. Week 20 sweeps `reps ∈ {1, 2, 3}` and prints the Gram matrix's off-diagonal spread at each depth; at 4 qubits its post-hoc control finds that the input scale matters more (week 20 notes, section 3).
+Small, nearly uniform kernel values are what **kernel concentration** looks like (Thanasilp et al., *Nat. Commun.* 15 (2024), DOI 10.1038/s41467-024-49287-w): for sufficiently expressive feature maps, $K_{ij}$ concentrates around a constant value, exponentially in the number of qubits $n$, and the SVM is left fitting noise. This script does not test that: it runs one depth at 4 qubits. Week 20 sweeps `reps ∈ {1, 2, 3}` and prints the Gram matrix's off-diagonal spread at each depth; at 4 qubits its post-hoc control finds that the input scale matters more (week 20 notes, section 3).
 
 ## 5. ASCII heat-map reading
 
@@ -44,8 +44,8 @@ Rows and columns sorted by class. The block structure is visible if you squint: 
 
 - $K = K^\top$ to $10^{-9}$.
 - $\mathrm{diag}(K) = \mathbf{1}$ to $10^{-6}$.
-- $\lambda_{\min}(K) \ge -10^{-8}$ (numerical PSD; in practice $0.28$).
-- Mean within-class similarity exceeds mean between-class similarity (by 0.6 pp here — small but real).
+- $\lambda_{\min}(K) \ge -10^{-8}$ (numerical PSD; in practice $0.107$).
+- Mean within-class similarity exceeds mean between-class similarity (by 1.9 pp here).
 
 ## 7. What week 19 will do
 
