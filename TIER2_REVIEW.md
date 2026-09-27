@@ -27,7 +27,7 @@ QAOA worked, then concentrated. On a fixed 6-node 3-regular graph:
 | 2 | 0.94 |
 | 3 | 0.98 |
 
-$\rho$ is QAOA's expected cut divided by the optimum $C^* = 7$, which week 13 finds by brute force over all $2^6 = 64$ cuts. That brute-force search is an exact classical solve of this instance ($\rho = 1$). Goemans–Williamson's 0.878 is a worst-case guarantee over all graphs, so QAOA's 0.98 on one instance exceeding it is not a head-to-head comparison. **But:** the same instance never gets larger than 6 nodes here. Week 14's barren-plateau probe on a wider hardware-efficient ansatz showed gradient variance halving every ~1.7 added qubits — by 10 qubits, the gradient variance is ~11× smaller than at 4. Scaling QAOA past tens of qubits is gated by the same problem.
+$\rho$ is QAOA's expected cut divided by the optimum $C^* = 7$, which week 13 finds by brute force over all $2^6 = 64$ cuts. That brute-force search is an exact classical solve of this instance ($\rho = 1$). Goemans–Williamson's 0.878 is a worst-case guarantee over all graphs, so QAOA's 0.98 on one instance exceeding it is not a head-to-head comparison. **But:** the same instance never gets larger than 6 nodes here. Week 14's barren-plateau probe on a wider hardware-efficient ansatz showed gradient variance halving every ~1.7 added qubits — by 10 qubits, the gradient variance is ~11× smaller than at 4. That probe measures a hardware-efficient RY+CNOT ansatz, not QAOA, so it does not show how QAOA itself scales.
 
 ### 2C — Variational classifier on Iris (weeks 15–17)
 

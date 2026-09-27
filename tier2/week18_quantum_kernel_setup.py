@@ -3,11 +3,11 @@
 Tier 2 / 2D.1. Working through:
   - the data-encoding -> kernel-matrix pipeline
         K(x, x') = |<phi(x) | phi(x')>|^2,    |phi(x)> = U_ZZ(x) |0...0>
-  - ZZFeatureMap (Havlicek et al. 2019, Suzuki et al. 2020):
+  - ZZFeatureMap (Havlicek et al. 2019, arXiv:1804.11326):
       H^n - U_Z(x) - H^n - U_Z(x), with U_Z(x) = prod_i exp(i x_i Z_i)
                                                  prod_{i<j} exp(i (pi - x_i)(pi - x_j) Z_i Z_j)
-  - building a 40-point Iris (1 vs 2) Gram matrix via FidelityQuantumKernel
-  - PSD verification (min eigenvalue ~ 0); spectrum and condition number;
+  - building a 40-point Iris (0 vs 1) Gram matrix via FidelityQuantumKernel
+  - PSD verification (min eigenvalue >= -1e-8); spectrum and condition number;
     diagonal = 1 (each |phi(x)> is a normalised pure state)
 """
 
