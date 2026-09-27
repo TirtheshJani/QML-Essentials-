@@ -326,44 +326,41 @@ each:
   what the result means.
 
 The biggest tier-over-tier delta in the writing is honesty under
-pressure. Tier 1 was structured by Codebook progress; Tier 2 by a
-plan with assertion gates; Tier 3 by *its own falsifiable
-predictions*, though not all of them could fail. In this review "the
-gates" are the thresholds committed with the scripts in 71ca939, none
-of which has changed since. The same commit also held a first
-`TIER3_REVIEW.md` whose numbers did not come from the committed scripts
-and were later replaced as unreproducible (9767eea), so the history
-cannot show that the thresholds were set before any result was seen;
-it shows only that they were not moved after the first recorded full
-run (c28a158), which missed one of them. `TIER3_PLAN.md` landed in the
-same commit and lists only some of the gates: week 23 has 5 gates in
-its script and 3 in the plan, and the plan's final gradient *variance*
-gate is a gradient *norm* gate in the script. The week-25 noise
-sweep had pass criteria that could have failed (test
-fidelity > 0.85 at $p = 0.005$ and monotone decay in $p$; the script
-also requires more than 30 pp over random encoders at $p = 0.005$), but
-an encoder that keeps only the dominant eigenvector passes all of them
-(§1.3), as one whose code state is the same for every $r$ passes the
-week-23 and week-24 fidelity gates (§1.1): these mean-fidelity gates
-show that the dominant direction is compressed, not that the code
-carries $r$.
-Two other checks could not: 999 of 1000 untrained encoders pass the
-week-24 Spearman gate (§1.2), and week 26's criterion
-was only that the head-to-head table exists. Week 23's final-gradient
-gate (5-seed mean norm > $10^{-3}$) is no evidence against a plateau
-either: a converged run has near-zero gradient, and the gate passes
-(mean 0.0023) because seed 1 is still leaving the plateau (0.0100;
-without it the mean would be about 0.0003). Seed 0's 0.0015 is Adam
-oscillating at $P(\text{trash} = 00) = 1.0000$: over the last 20
-epochs its loss ranges from 9.55e-06 to 2.14e-04 and ends above that
-minimum (`tier3/check_dominant_eigvec_baseline.log`). It stays in the
-script because it was committed with the scripts in 71ca939; the
-barren-plateau evidence is the init-gradient gate (0.44 > 0.3).
-The week-24 held-out split is weaker than it looks as well, since on
-this dataset held-out fidelity follows from training fidelity (§1.1).
-One gate did fail: week 23's across-seed std
-(0.0214 against < 0.02, §1.1). The script reports the miss instead of
-moving the threshold.
+pressure. Tier 1 was structured by Codebook progress; Tier 2 by a plan
+with assertion gates; Tier 3 by *its own falsifiable predictions*,
+though not all of them could fail. In this review "the gates" are the
+thresholds committed with the scripts in 71ca939, none of which has
+changed since. The same commit also held a first `TIER3_REVIEW.md` whose
+numbers did not come from the committed scripts and were later replaced
+as unreproducible (9767eea), so the history cannot show that the
+thresholds were set before any result was seen; it shows only that they
+were not moved after the first recorded full run (c28a158), which missed
+one of them. `TIER3_PLAN.md` landed in the same commit and lists only
+some of the gates: week 23 has 5 gates in its script and 3 in the plan,
+and the plan's final gradient *variance* gate is a gradient *norm* gate
+in the script. The week-25 noise sweep had pass criteria that could have
+failed (test fidelity > 0.85 at $p = 0.005$ and monotone decay in $p$;
+the script also requires more than 30 pp over random encoders at
+$p = 0.005$), but an encoder that keeps only the dominant eigenvector passes
+all of them (§1.3), as one whose code state is the same for every $r$
+passes the week-23 and week-24 fidelity gates (§1.1): these
+mean-fidelity gates show that the dominant direction is compressed, not
+that the code carries $r$. Two other checks could not: 999 of 1000
+untrained encoders pass the week-24 Spearman gate (§1.2), and week 26's
+criterion was only that the head-to-head table exists. Week 23's
+final-gradient gate (5-seed mean norm > $10^{-3}$) is no evidence
+against a plateau either: a converged run has near-zero gradient, and
+the gate passes (mean 0.0023) because seed 1 is still leaving the
+plateau (0.0100; without it the mean would be about 0.0003). Seed 0's
+0.0015 is Adam oscillating at $P(\text{trash} = 00) = 1.0000$: over the
+last 20 epochs its loss ranges from 9.55e-06 to 2.14e-04 and ends above
+that minimum (`tier3/check_dominant_eigvec_baseline.log`). It stays in
+the script because it was committed with the scripts in 71ca939; the
+barren-plateau evidence is the init-gradient gate (0.44 > 0.3). The
+week-24 held-out split is weaker than it looks as well, since on this
+dataset held-out fidelity follows from training fidelity (§1.1). One
+gate did fail: week 23's across-seed std (0.0214 against < 0.02, §1.1).
+The script reports the miss instead of moving the threshold.
 
 ## 6. Closing thought
 
