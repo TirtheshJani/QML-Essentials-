@@ -178,8 +178,9 @@ def main():
         f"test recon fid {test_rec.mean():.4f} < 0.85"
     assert gap_loc < 0.10, \
         f"held-out gap {gap_loc:.4f} > 0.10"
-    # Pre-registered gate. Section 3b shows untrained encoders pass it too,
-    # so it checks the latent pipeline, not what training learned.
+    # Gate committed with the scripts in 71ca939 (threshold unchanged since).
+    # Section 3b shows untrained encoders pass it too, so it checks the
+    # latent pipeline, not what training learned.
     assert abs(rho_pc1) > 0.9, \
         f"PC1 fails to track r monotonically: |Spearman| = {abs(rho_pc1):.3f}"
     assert os.path.exists(LATENT_PNG)

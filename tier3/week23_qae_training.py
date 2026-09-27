@@ -146,26 +146,28 @@ def main():
     print(f"  saved {LOSS_PNG}")
 
     section("Checkpoint assertions")
-    # Five gates, fixed in the committed script (71ca939) before the first
-    # full run. TIER3_PLAN.md lists three of them (mean > 0.95, std < 0.02,
-    # final gradient *variance* > 1e-3, checked here as a gradient *norm*);
-    # the recon and init-gradient gates are in the script only.
+    # Five gates, committed with the scripts in 71ca939 (thresholds unchanged
+    # since; TIER3_REVIEW.md section 5 has the history). TIER3_PLAN.md lists
+    # three of them (mean > 0.95, std < 0.02, final gradient *variance*
+    # > 1e-3, checked here as a gradient *norm*); the recon and
+    # init-gradient gates are in the script only.
     assert f_local_mu > 0.95, \
         f"mean local fidelity {f_local_mu:.4f} below 0.95 target"
-    # Pre-registered gate (TIER3_PLAN.md): std across seeds < 0.02. The first
+    # Gate from TIER3_PLAN.md: std across seeds < 0.02. The first recorded
     # full run missed it (std 0.0214): seed 2 stops at a stationary point
     # near 0.955 and seed 1 is still on a slow plateau at epoch 200, while
     # seeds 0, 3 and 4 reach 1.0000. It is reported rather than asserted so
     # the miss stays visible instead of moving the threshold.
     if f_local_sd >= 0.02:
-        print(f"  MISSED pre-registered gate: std across seeds "
-              f"{f_local_sd:.4f} >= 0.02 (see week23_notes.md)")
+        print(f"  MISSED gate committed in 71ca939: std across seeds "
+              f"{f_local_sd:.4f} >= 0.02, threshold unchanged "
+              f"(see week23_notes.md)")
     assert f_recon_mu > 0.93, \
         f"mean reconstruction fidelity {f_recon_mu:.4f} below 0.93"
     # This gate passes while some seeds are still moving (seeds 0 and 1 in
     # the first full run); a run where every seed converged would fail it.
     # So it is not evidence against a plateau (the init-gradient gate below
-    # is). Kept because it was fixed before the first full run.
+    # is). Kept because it was committed with the scripts in 71ca939.
     assert gN_mu > 1e-3, \
         f"final gradient norm {gN_mu:.2e} suggests we slid into the plateau"
     assert g0_mu > 0.3, \
@@ -174,8 +176,8 @@ def main():
     n_gates = 5
     std_missed = f_local_sd >= 0.02
     note = " (std gate missed)" if std_missed else ""
-    print(f"  PASS on {n_gates - int(std_missed)} of {n_gates} pre-registered "
-          f"gates{note}: local fid {f_local_mu:.3f} +/- {f_local_sd:.3f}, "
+    print(f"  PASS on {n_gates - int(std_missed)} of {n_gates} gates committed "
+          f"in 71ca939{note}: local fid {f_local_mu:.3f} +/- {f_local_sd:.3f}, "
           f"recon fid {f_recon_mu:.3f}, mean gradient norm {g0_mu:.2f} at "
           f"init and {gN_mu:.4f} at the end.")
 

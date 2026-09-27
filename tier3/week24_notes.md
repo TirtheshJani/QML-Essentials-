@@ -43,8 +43,8 @@ trace = 1 reducing to 15). We flatten and concatenate
 $(\mathrm{Re}\rho, \mathrm{Im}\rho)$ into a 32-D feature vector per state,
 then run PCA across the 22 $r$ points.
 
-The pre-registered test was that **PC1 should track $r$
-monotonically** if the QAE learned that $r$ is the only varying axis,
+The test committed with the scripts in 71ca939 was that **PC1 should
+track $r$ monotonically** if the QAE learned that $r$ is the only varying axis,
 measured with Spearman rank correlation:
 
 $$

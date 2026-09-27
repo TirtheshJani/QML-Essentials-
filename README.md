@@ -41,9 +41,9 @@ parameter-matched comparison in this repo is tier 2 week 17, where a
 mean test accuracy), within seed noise (3 seeds, 20 test examples, where
 one example is 5 pp). In week 23, seed 2 stops at a stationary point at
 0.955 and seed 1 (0.958) is still on a slow plateau when training ends
-at epoch 200, which misses my pre-registered std < 0.02 gate (fixed in
-the committed script before the first full run; `TIER3_REVIEW.md` §5
-defines the term); the script reports the miss rather than failing. `TIER3_REVIEW.md` has the full
+at epoch 200, which misses my std < 0.02 gate (committed with the scripts in
+71ca939, threshold unchanged since; `TIER3_REVIEW.md` §5 has the
+history); the script reports the miss rather than failing. `TIER3_REVIEW.md` has the full
 writeup.
 
 To reproduce tier 3 in one script (about 22 minutes on 4 CPU cores):
@@ -242,8 +242,8 @@ bounds that the loop below does not run. Every week from week 8 on is
 a self-checking script: assertion-gated `main()`, exits non-zero if
 any gate fails; tier 1 weeks 1-7 are print-only
 walkthroughs that fail only if they crash. One gate is reported rather
-than asserted: week 23's across-seed std gate, which the first full run
-missed, prints `MISSED pre-registered gate` (see
+than asserted: week 23's across-seed std gate, which the first recorded
+full run missed, prints `MISSED gate committed in 71ca939` (see
 `tier3/week23_notes.md`). From a clean checkout:
 
 ```bash

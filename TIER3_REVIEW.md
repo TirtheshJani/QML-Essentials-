@@ -43,8 +43,8 @@ and 4 in week 23. Seed 2 stops at a stationary point at 0.9551
 slow plateau at epoch 200 (gradient norm 0.010), the plateau near cost
 0.04 that seed 0 left at about epoch 130 (`tier3/week23_loss_curves.png`).
 Together they put the across-seed std at 0.0214, which misses the
-pre-registered std < 0.02 gate; the script reports the miss rather than
-hiding it (`tier3/week23_notes.md`). The held-out gate passes: in week
+std < 0.02 gate committed with the scripts in 71ca939 (threshold
+unchanged since); the script reports the miss rather than hiding it (`tier3/week23_notes.md`). The held-out gate passes: in week
 24, four seeds reconstruct the unseen bond lengths at 1.0000 and seed 2
 at 0.9355. On this 2-D linear dataset that is interpolation, not
 generalization: the 11 training states span the subspace that holds the
@@ -74,7 +74,7 @@ in $r$, so any encoder maps the curve to a smooth arc of code states.
 The week-24 control runs the same features, PCA and Spearman on 1000
 untrained RY+CNOT encoders with seeded random angles: median
 $|\rho| = 1.0000$, mean $0.9994 \pm 0.0081$, and 999 of 1000 pass the
-pre-registered $|\rho| > 0.9$ gate. No encoder at all (the identity)
+week-24 $|\rho| > 0.9$ gate. No encoder at all (the identity)
 also gives $|\rho| = 1.000$. The monotone latent arc is a property of
 the data, and the Spearman gate could essentially not fail.
 
@@ -280,27 +280,31 @@ each:
 The biggest tier-over-tier delta in the writing is honesty under
 pressure. Tier 1 was structured by Codebook progress; Tier 2 by a
 plan with assertion gates; Tier 3 by *its own falsifiable
-predictions*, though not all of them could fail. In this review
-"pre-registered" means fixed in the committed scripts at commit
-71ca939, before the first full run recorded in the history (in which
-week 23 stopped on its own std assert). `TIER3_PLAN.md` landed in the
+predictions*, though not all of them could fail. In this review "the
+gates" are the thresholds committed with the scripts in 71ca939, none
+of which has changed since. The same commit also held a first
+`TIER3_REVIEW.md` whose numbers did not come from the committed scripts
+and were later replaced as unreproducible (9767eea), so the history
+cannot show that the thresholds were set before any result was seen;
+it shows only that they were not moved after the first recorded full
+run (c28a158), which missed one of them. `TIER3_PLAN.md` landed in the
 same commit and lists only some of the gates: week 23 has 5 gates in
 its script and 3 in the plan, and the plan's final gradient *variance*
 gate is a gradient *norm* gate in the script. The week-25 noise
-sweep had pre-registered pass criteria that could have failed (test
+sweep had pass criteria that could have failed (test
 fidelity > 0.85 at $p = 0.005$ and monotone decay in $p$; the script
 also requires more than 30 pp over random encoders at $p = 0.005$).
 Two other checks could not: 999 of 1000 untrained encoders pass the
-week-24 Spearman gate (§1.2), and week 26's pre-registered criterion
+week-24 Spearman gate (§1.2), and week 26's criterion
 was only that the head-to-head table exists. Week 23's final-gradient
 gate (5-seed mean norm > $10^{-3}$) is no evidence against a plateau
 either: a converged run has near-zero gradient, and the gate passes
 (mean 0.0023) because seeds 0 and 1 have not converged. It stays in
-the script because it was fixed before the first full run; the
+the script because it was committed with the scripts in 71ca939; the
 barren-plateau evidence is the init-gradient gate (0.44 > 0.3).
 The week-24 held-out split is weaker than it looks as well, since on
 this dataset held-out fidelity follows from training fidelity (§1.1).
-One pre-registered gate did fail: week 23's across-seed std
+One gate did fail: week 23's across-seed std
 (0.0214 against < 0.02, §1.1). The script reports the miss instead of
 moving the threshold.
 
