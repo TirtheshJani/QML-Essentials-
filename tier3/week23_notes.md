@@ -72,8 +72,13 @@ but still plateau-free. At the last epoch the per-seed norms are 0.0015,
 do end below $10^{-3}$. They are converged, not stalled at init: seeds 3
 and 4 sit at the global minimum (local fidelity 1.0000) and seed 2 at
 the stationary point described below. The assertion is on the 5-seed
-mean (0.0023), which stays above $10^{-3}$ because seeds 0 (0.0015) and
-1 (0.0100) have not converged. A run in which every seed converged would
+mean (0.0023), which stays above $10^{-3}$ because seed 1 (0.0100) is
+still leaving the plateau; had it converged too, the mean would be about
+0.0003. Seed 0 (0.0015) is at local fidelity 1.0000, where Adam keeps
+oscillating: over the last 20 epochs its loss ranges from 9.55e-06 to
+2.14e-04 and ends at 0.000017, above that minimum
+(`tier3/check_dominant_eigvec_baseline.log`; the bounces are visible in
+`week23_loss_curves.png`). A run in which every seed converged would
 fail it, so passing it is not evidence against a plateau; the
 init-gradient gate is. The gate is kept because it was committed with
 the scripts in 71ca939.

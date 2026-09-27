@@ -352,8 +352,12 @@ week-24 Spearman gate (§1.2), and week 26's criterion
 was only that the head-to-head table exists. Week 23's final-gradient
 gate (5-seed mean norm > $10^{-3}$) is no evidence against a plateau
 either: a converged run has near-zero gradient, and the gate passes
-(mean 0.0023) because seeds 0 and 1 have not converged. It stays in
-the script because it was committed with the scripts in 71ca939; the
+(mean 0.0023) because seed 1 is still leaving the plateau (0.0100;
+without it the mean would be about 0.0003). Seed 0's 0.0015 is Adam
+oscillating at $P(\text{trash} = 00) = 1.0000$: over the last 20
+epochs its loss ranges from 9.55e-06 to 2.14e-04 and ends above that
+minimum (`tier3/check_dominant_eigvec_baseline.log`). It stays in the
+script because it was committed with the scripts in 71ca939; the
 barren-plateau evidence is the init-gradient gate (0.44 > 0.3).
 The week-24 held-out split is weaker than it looks as well, since on
 this dataset held-out fidelity follows from training fidelity (§1.1).

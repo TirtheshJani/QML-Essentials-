@@ -166,10 +166,12 @@ def main():
               f"(see week23_notes.md)")
     assert f_recon_mu > 0.93, \
         f"mean reconstruction fidelity {f_recon_mu:.4f} below 0.93"
-    # This gate passes while some seeds are still moving (seeds 0 and 1 in
-    # the first full run); a run where every seed converged would fail it.
-    # So it is not evidence against a plateau (the init-gradient gate below
-    # is). Kept because it was committed with the scripts in 71ca939.
+    # In the first recorded full run this gate passes because seed 1 (0.0100)
+    # is still leaving the plateau; seed 0's 0.0015 is Adam oscillating at
+    # P(trash=00) = 1.0000, and seeds 2-4 end at 0.0000-0.0001. A run where
+    # every seed converged would fail it, so it is not evidence against a
+    # plateau (the init-gradient gate below is). Kept because it was
+    # committed with the scripts in 71ca939.
     assert gN_mu > 1e-3, \
         f"final gradient norm {gN_mu:.2e} suggests we slid into the plateau"
     assert g0_mu > 0.3, \
