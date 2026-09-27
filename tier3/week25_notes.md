@@ -36,13 +36,24 @@ $$
 $$
 
 If $\Delta(p) \to 0$ at large $p$, training stops mattering. If
-$\Delta(p)$ stays > 30 pp through $p = 0.005$, the QAE is still
-extracting useful structure at the mid-sweep point. The
+$\Delta(p)$ stays > 30 pp through $p = 0.005$, the QAE is still doing
+better than an arbitrary encoder at the mid-sweep point. The
 assertion at the bottom requires the latter.
 
 Measured (pinned `requirements.txt`): at $p = 0.005$ the trained QAE's
 test fidelity is 0.8707 ± 0.0090 (3 seeds) against 0.2606 ± 0.1111 for
 the random encoders, $\Delta = +61$ pp; at $p = 0.02$, $\Delta = +42$ pp.
+
+Post-hoc, this bar turned out to be low: the trained-vs-random gap is
+mostly what any encoder that keeps the dominant eigenvector $v_1$ of the
+training states gets (`tier3/check_dominant_eigvec_baseline.py`, written
+in review round 4). Week-24 seed 2, which keeps only $v_1$, scores
+0.8648 at $p = 0.005$ under this noise model without retraining, +60 pp
+over the random encoders and 0.0058 below the trained mean, and passes
+every gate in this script. Two of the three seeds trained at
+$p = 0.005$ also keep only $v_1$ ($\langle v_2|P|v_2\rangle$ = 0.0034
+and 0.0001 for $P = U^\dagger (I_{\text{code}} \otimes
+\ket{00}\bra{00}) U$; seed 1 keeps both, 0.9904).
 
 ## How training under noise differs
 
@@ -58,7 +69,12 @@ Two practical changes from week 23:
 
 This is why we retrain at each $p$ rather than evaluating the noiseless
 encoder under noise. The latter would underestimate trained
-performance and make the noise tax look worse than it is.
+performance and make the noise tax look worse than it is. That was the
+expectation; it was not measured here. The post-hoc check above
+evaluated two noiseless-trained week-24 encoders at $p = 0.005$ without
+retraining: seed 0 (keeps both directions) scores 0.8788 and seed 2
+(keeps only $v_1$) 0.8648, against 0.8707 ± 0.0090 for the retrained
+seeds.
 
 ## Failure modes this catches
 

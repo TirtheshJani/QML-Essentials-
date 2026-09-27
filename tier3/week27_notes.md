@@ -23,7 +23,13 @@ week 25 at $p = 0.005$ 0.8707 ± 0.0090, week 26 small AE 0.9811 ± 0.0211).
 
 The Spearman gate also passes for 999 of 1000 untrained encoders (the
 week-24 control, written to the CSV as the `UntrainedEncoder` row), so
-it checks the latent pipeline, not what training learned.
+it checks the latent pipeline, not what training learned. The week 23
+and 24 fidelity gates, loosened or not, also pass for an encoder that
+keeps only the states' dominant eigenvector and gives every $r$ the same
+code state, and the week 25 gate passes for week-24 seed 2, which keeps
+only that eigenvector (post-hoc, `tier3/check_dominant_eigvec_baseline.py`).
+So they show that the dominant direction is compressed, not that the
+code carries $r$.
 
 5 seeds for everything except the noise sweep (3 seeds, since
 `default.mixed` is roughly 4× slower than `default.qubit`). The reduced

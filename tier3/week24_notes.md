@@ -75,7 +75,7 @@ the 16×16 unitary numerically (so `reconstruction_fidelity` doesn't
 have to differentiate through a partial trace), and we use the trained
 $V(\boldsymbol\alpha)$ for the latent-space probe.
 
-## Failure modes this week catches
+## Failure modes, and what this week's gates can show
 
 - **Overfitting** — large train/test gap. The QAE has 16 parameters and
   the dataset has 22 states in a 2-D subspace. This split cannot show
@@ -87,10 +87,18 @@ $V(\boldsymbol\alpha)$ for the latent-space probe.
   (`tier3/check_qae_bounds.py`), so high trash fidelity forces high
   reconstruction fidelity.
 - **Latent collapse** (a high-fidelity QAE that maps every $r$ to almost
-  the same code state) is ruled out by the same bound: the decoder would
-  then return almost the same state for every $r$, and the inputs are
-  not all close to one state, so reconstruction fidelity could not be
-  high for all of them.
+  the same code state) is possible here, and the mean-fidelity gates
+  cannot detect it. The training states' average density matrix has one
+  eigenvalue of 0.955872, so an encoder that keeps only that eigenvector
+  and gives every $r$ the same code state scores 0.9559 on the training
+  states and 0.9540 on the test states, for both fidelities, and passes
+  every fidelity gate this week (post-hoc check,
+  `tier3/check_dominant_eigvec_baseline.py`). Seed 2 is a near-instance:
+  it keeps only that eigenvector ($\langle v_2|P|v_2\rangle = 0.0000$
+  for $P = U^\dagger (I_{\text{code}} \otimes \ket{00}\bra{00}) U$),
+  its Spearman$(r, \text{PC1})$ is $+0.24$, and its test reconstruction
+  (0.9355) is below that constant-code encoder's 0.9540. Only the
+  Spearman gate could flag it, and it is applied to seed 0 only.
 
 ## Output
 

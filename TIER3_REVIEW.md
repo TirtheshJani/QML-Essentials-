@@ -39,17 +39,21 @@ print with the pinned `requirements.txt`:
 The 16-parameter, depth-4 RY+CNOT encoder (twice the 8 quantum weights
 of the Tier 2 week 21 block) reaches local fidelity 1.0000 on seeds 0, 3
 and 4 in week 23. Seed 2 stops at a stationary point at 0.9551
-(gradient norm 0.0000 at the last epoch). Seed 1 (0.9576) is still on a
-slow plateau at epoch 200 (gradient norm 0.010), the plateau near cost
-0.04 that seed 0 left at about epoch 130 (`tier3/week23_loss_curves.png`).
-Together they put the across-seed std at 0.0214, which misses the
-std < 0.02 gate committed with the scripts in 71ca939 (threshold
-unchanged since); the script reports the miss rather than hiding it (`tier3/week23_notes.md`). The held-out gate passes: in week
-24, four seeds reconstruct the unseen bond lengths at 1.0000 and seed 2
-at 0.9355. On this 2-D linear dataset that is interpolation, not
-generalization: the 11 training states span the subspace that holds the
-test states, and there both fidelities are fixed polynomials of the
-state, so held-out fidelity follows from training fidelity for any
+(gradient norm 0.0000 at the last epoch): an encoder that keeps only
+the dominant eigenvector (described below), with loss
+$1 - \lambda_1 = 0.044861$. Seed 1 (0.9576) is still on a slow plateau
+at epoch 200 (gradient norm 0.010), close to the same encoder, the
+plateau near cost 0.04 that seed 0 left at about epoch 130
+(`tier3/week23_loss_curves.png`). Together they put the across-seed
+std at 0.0214, which misses the std < 0.02 gate committed with the
+scripts in 71ca939 (threshold unchanged since); the script reports the
+miss rather than hiding it (`tier3/week23_notes.md`). The held-out gate
+passes: in week 24, four seeds reconstruct the unseen bond lengths at
+1.0000 and seed 2 at 0.9355, below the 0.9540 of an encoder whose
+decoder returns the same state for every input (below). On this 2-D
+linear dataset that is interpolation, not generalization: the 11
+training states span the subspace that holds the test states, and there
+both fidelities are fixed polynomials of the state, so held-out fidelity follows from training fidelity for any
 encoder. That includes $r = 2.5$, the one test bond length just outside
 the training range (which ends at 2.4). Reconstruction fidelity in week
 23 is 1.1 pp below local (trash) fidelity (0.9719 vs 0.9825). That
@@ -57,6 +61,31 @@ closeness is guaranteed, not found: for a pure input, $F_{\text{loc}}^2 \le F_{\
 F_{\text{loc}}$ (`tier3/check_qae_bounds.py`), so high trash fidelity
 forces high reconstruction fidelity, and the 5-seed means sit inside
 that range ($0.9825^2 = 0.9653$).
+
+**What these fidelity gates cannot show (post-hoc).**
+`tier3/check_dominant_eigvec_baseline.py`, written in review round 4
+after these results were known (its output is committed next to it as
+`check_dominant_eigvec_baseline.log`), sets the level the gates would
+have to clear to say anything about $r$. The states' average density
+matrix has two nonzero eigenvalues, $\lambda_1 = 0.955139$ and
+$\lambda_2 = 0.044861$ (0.955872 and 0.044128 for the 11 training
+states), with eigenvectors $v_1$ and $v_2$. An encoder that sends $v_1$
+to one fixed code state with trash $00$ and $v_2$ to the same code state
+with trash $01$ gives every $r$ the same code state, yet both of its
+fidelities equal $|\langle v_1|\psi\rangle|^2$: 0.9551 over the 22
+states, and 0.9559 train / 0.9540 test when built from the training
+half. It passes every week-23 and week-24 fidelity gate. Seed 2 is an
+encoder of this kind in both weeks: it keeps only $v_1$ (with
+$P = U^\dagger (I_{\text{code}} \otimes \ket{00}\bra{00}) U$,
+$\langle v_1|P|v_1\rangle = 1.0000$ and
+$\langle v_2|P|v_2\rangle = 0.0000$), its final loss equals
+$1 - \lambda_1$ to six decimals, and Spearman$(r, \text{PC1})$ is
+$+0.08$ (week 23) and $+0.24$ (week 24). Week-23 seed 1 keeps little of
+$v_2$ at epoch 200 ($\langle v_2|P|v_2\rangle = 0.056$). The seeds that
+reach 1.0000 keep both directions ($\langle v_2|P|v_2\rangle \ge
+0.9996$). So the mean-fidelity gates pass for an encoder that carries no
+information about $r$; they cannot tell such a code from one that
+tracks $r$.
 
 ### 1.2 The latent arc is a property of the data, not of training
 
@@ -76,7 +105,10 @@ untrained RY+CNOT encoders with seeded random angles: median
 $|\rho| = 1.0000$, mean $0.9994 \pm 0.0081$, and 999 of 1000 pass the
 week-24 $|\rho| > 0.9$ gate. No encoder at all (the identity)
 also gives $|\rho| = 1.000$. The monotone latent arc is a property of
-the data, and the Spearman gate could essentially not fail.
+the data, and for an untrained encoder the Spearman gate could
+essentially not fail. A trained encoder can fail it: seed 2, which keeps
+only $v_1$ (§1.1), gives $+0.08$ (week 23) and $+0.24$ (week 24), but the
+gate is applied to seed 0 only.
 
 ### 1.3 Noise robustness was real but limited
 
@@ -97,6 +129,19 @@ mid-sweep point $p = 5\times10^{-3}$ the trained QAE was 61 pp above the
 mean of the random encoders, but the absolute fidelity has dropped from
 0.97 to 0.87. That delta would compound in any
 downstream computation that fed the decoded state into another circuit.
+
+Most of the 61 pp is what any encoder that keeps the dominant
+eigenvector gets (post-hoc check, §1.1). Week-24 seed 2, which keeps
+only $v_1$, scores 0.8648 at $p = 0.005$ under the same noise model
+without retraining: 0.0058 below the trained mean, inside one standard
+deviation, and 60 pp above the random encoders, so it passes every
+week-25 gate. Two of the three seeds trained at $p = 0.005$ also keep
+only $v_1$ ($\langle v_2|P|v_2\rangle$ = 0.0034 and 0.0001; seed 1
+keeps both, 0.9904). Week-24 seed 0, which keeps both directions,
+scores 0.8788 at $p = 0.005$ without retraining, but less than seed 2
+at $p = 0.01$ and $0.02$ (0.7768 and 0.6191 against 0.7879 and 0.6638).
+The random encoders are the only control the week-25 script reports,
+and they are a low bar.
 
 Interpreting the slope: the decline flattens as $p$ grows (about 23
 fidelity per unit $p$ near $p = 0$, about 13 between $p = 0.01$ and
@@ -126,7 +171,7 @@ epochs 0, 50, 100, 150 and 199 in week 23 (0 and 199 in weeks 24 and
 | location | observation |
 |------|------|
 | init, $n=4$, $L=4$ | $\|\nabla C\|_2 = 0.44$ (5-seed mean, range 0.28 to 0.51), well above the plateau |
-| training, week 23 | the 5-seed mean fell from 0.44 to $2.3 \times 10^{-3}$; seeds 2, 3 and 4 end below $10^{-3}$ because they converged (two at local fidelity 1.0000, one at a stationary point at 0.955), not because they stalled |
+| training, week 23 | the 5-seed mean fell from 0.44 to $2.3 \times 10^{-3}$; seeds 2, 3 and 4 end below $10^{-3}$ because they converged (two at local fidelity 1.0000, one at the dominant-eigenvector encoder at 0.955, §1.1), not because they stalled |
 | under noise | not measured: the week 25 and week 27 noise runs do not log gradient norms |
 
 In short: the choice of $n_{\text{qubits}} = 4$ and $L = 4$ from the
@@ -296,7 +341,12 @@ its script and 3 in the plan, and the plan's final gradient *variance*
 gate is a gradient *norm* gate in the script. The week-25 noise
 sweep had pass criteria that could have failed (test
 fidelity > 0.85 at $p = 0.005$ and monotone decay in $p$; the script
-also requires more than 30 pp over random encoders at $p = 0.005$).
+also requires more than 30 pp over random encoders at $p = 0.005$), but
+an encoder that keeps only the dominant eigenvector passes all of them
+(§1.3), as one whose code state is the same for every $r$ passes the
+week-23 and week-24 fidelity gates (§1.1): these mean-fidelity gates
+show that the dominant direction is compressed, not that the code
+carries $r$.
 Two other checks could not: 999 of 1000 untrained encoders pass the
 week-24 Spearman gate (§1.2), and week 26's criterion
 was only that the head-to-head table exists. Week 23's final-gradient

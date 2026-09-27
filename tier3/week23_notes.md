@@ -103,8 +103,20 @@ and the std gate as a printed report (below).
 **Result of the first recorded full run: four of five.** Mean local fidelity is
 0.9825 ± 0.0214 and mean reconstruction fidelity 0.9719 ± 0.0349. Seeds
 0, 3 and 4 reach local fidelity 1.0000. Seed 2 stops at a stationary
-point at 0.9551 (gradient norm 0.0000). Seed 1 is at 0.9576 and still on
-a slow plateau when training ends at epoch 200 (gradient norm 0.010);
+point at 0.9551 (gradient norm 0.0000). A post-hoc check written in
+review round 4 (`tier3/check_dominant_eigvec_baseline.py`, output in the
+`.log` next to it) shows what that point is: the encoder that keeps only
+the dominant eigenvector $v_1$ of the states' average density matrix.
+Seed 2's final loss, 0.044861, equals $1 - \lambda_1$; its projector
+$P = U^\dagger (I_{\text{code}} \otimes \ket{00}\bra{00}) U$ has
+$\langle v_1|P|v_1\rangle = 1.0000$ and $\langle v_2|P|v_2\rangle =
+0.0000$; and its latent code does not order $r$ (Spearman $+0.08$). An
+encoder of that kind whose code state is the same for every $r$ scores
+0.9551 on both fidelities and passes both fidelity gates above, so they
+cannot tell a code that tracks $r$ from one that does not. Seed 1 is at
+0.9576 and still on a slow plateau when training ends at epoch 200
+(gradient norm 0.010), close to the same encoder
+($\langle v_2|P|v_2\rangle = 0.056$);
 seed 0 sat on the same plateau until about epoch 130
 (`week23_loss_curves.png`). That spread puts the std at 0.0214, which
 misses the std < 0.02 gate. The same two seeds give the

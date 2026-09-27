@@ -154,9 +154,11 @@ def main():
     assert f_local_mu > 0.95, \
         f"mean local fidelity {f_local_mu:.4f} below 0.95 target"
     # Gate from TIER3_PLAN.md: std across seeds < 0.02. The first recorded
-    # full run missed it (std 0.0214): seed 2 stops at a stationary point
-    # near 0.955 and seed 1 is still on a slow plateau at epoch 200, while
-    # seeds 0, 3 and 4 reach 1.0000. It is reported rather than asserted so
+    # full run missed it (std 0.0214): seed 2 stops at the encoder that keeps
+    # only the dominant eigenvector of the states' average density matrix
+    # (loss 1 - lambda1 = 0.0449; tier3/check_dominant_eigvec_baseline.py)
+    # and seed 1 is still on a slow plateau at epoch 200, while seeds 0, 3
+    # and 4 reach 1.0000. It is reported rather than asserted so
     # the miss stays visible instead of moving the threshold.
     if f_local_sd >= 0.02:
         print(f"  MISSED gate committed in 71ca939: std across seeds "

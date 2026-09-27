@@ -22,28 +22,38 @@ reruns weeks 23-26 and writes the QAE and classical-AE rows to
 |------|------:|
 | QAE trash fidelity P(trash=00), all 22 states, 5 seeds (week 23) | 0.9825 ± 0.0214 |
 | QAE test reconstruction fidelity, 5 seeds (week 24) | 0.9871 ± 0.0258 |
+| Same two metrics for an encoder that keeps only the states' dominant eigenvector, with one code state for every r (post-hoc check) | 0.9551 / 0.9540 |
 | Spearman(r, latent PC1), seed 0 (week 24); 1000 untrained encoders give median abs. value 1.000 | -1.000 |
 | QAE test trash fidelity P(trash=00) at depolarizing p = 0.005, 3 seeds (week 25) | 0.8707 ± 0.0090 (20 random encoders: 0.2606 ± 0.1111) |
+| Same, for week-24 seed 2 (keeps only the dominant eigenvector), not retrained under noise (post-hoc check) | 0.8648 |
 | Linear classical AE, 256 params, test reconstruction (week 26) | 1.0000 ± 0.0000 |
 | Nonlinear classical AE, 136 params, test reconstruction (week 26) | 0.9811 ± 0.0211 |
 
-Four caveats. The 22 H₂ states span only a 2-D subspace, so the linear
+Five caveats. The 22 H₂ states span only a 2-D subspace, so the linear
 AE reconstructs them exactly and the QAE cannot beat it. Because of that
 geometry the Spearman row is a property of the data, not of training
 (every state is cos t|1100⟩ + sin t|0011⟩, and 999 of 1000 untrained
 encoders also pass the |ρ| > 0.9 gate), and the held-out split tests
 interpolation, not generalization (the training fidelities fix the
-held-out ones, including at r = 2.5, just outside the training range). Neither
-classical AE is parameter-matched to the QAE's 16 parameters, and the
-QAE and the 136-parameter AE tie within one standard deviation; the only
+held-out ones, including at r = 2.5, just outside the training range).
+The states' average density matrix has one eigenvalue of 0.955, so an
+encoder that keeps only that eigenvector passes the week 23 and 24
+fidelity gates even when its code state is the same for every r, and
+week-24 seed 2, which keeps only that eigenvector, passes every week 25
+gate without retraining: those gates show that the dominant direction
+is compressed, not that the code carries r (post-hoc,
+`tier3/check_dominant_eigvec_baseline.py`). Neither classical AE is
+parameter-matched to the QAE's 16 parameters, and the QAE and the
+136-parameter AE tie within one standard deviation; the only
 parameter-matched comparison in this repo is tier 2 week 17, where a
 13-parameter MLP edges out a 13-parameter hybrid by 2 pp (0.943 vs 0.923
 mean test accuracy), within seed noise (3 seeds, 20 test examples, where
-one example is 5 pp). In week 23, seed 2 stops at a stationary point at
-0.955 and seed 1 (0.958) is still on a slow plateau when training ends
-at epoch 200, which misses my std < 0.02 gate (committed with the scripts in
-71ca939, threshold unchanged since; `TIER3_REVIEW.md` §5 has the
-history); the script reports the miss rather than failing. `TIER3_REVIEW.md` has the full
+one example is 5 pp). In week 23, seed 2 stops at that
+dominant-eigenvector encoder (loss 1 − λ₁ = 0.0449) and seed 1 (0.958)
+is still close to it when training ends at epoch 200, which misses my
+std < 0.02 gate (committed with the scripts in 71ca939, threshold
+unchanged since; `TIER3_REVIEW.md` §5 has the history); the script
+reports the miss rather than failing. `TIER3_REVIEW.md` has the full
 writeup.
 
 To reproduce tier 3 in one script (about 22 minutes on 4 CPU cores):
@@ -237,8 +247,10 @@ tiers:
 
 Each tier directory holds flat `weekN_<topic>.py` + `weekN_notes.md`
 files; tiers 2 and 3 also hold a `utils/` submodule for shared helpers,
-and `tier3/check_qae_bounds.py` is a numerical check of two QAE fidelity
-bounds that the loop below does not run. Every week from week 8 on is
+and two checks sit next to the tier 3 weeks that the loop below does
+not run: `tier3/check_qae_bounds.py` (two QAE fidelity bounds) and the
+post-hoc `tier3/check_dominant_eigvec_baseline.py` (output committed as
+`check_dominant_eigvec_baseline.log`). Every week from week 8 on is
 a self-checking script: assertion-gated `main()`, exits non-zero if
 any gate fails; tier 1 weeks 1-7 are print-only
 walkthroughs that fail only if they crash. One gate is reported rather
