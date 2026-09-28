@@ -45,7 +45,7 @@ Test accuracy locks at 1.00 by epoch 10 and stays there; train accuracy plateaus
 
 ## 5. The quantum gain over a 1-Linear baseline
 
-A single `nn.Linear(4, 1)` (5 parameters, no quantum block) trained under the same protocol reaches **95 %** test accuracy. The hybrid model with 8 added quantum parameters reaches **100 %** — a **+5 pp** lift. That five-point gain is small in absolute terms, but it is real: the quantum block contributes a non-linear map that the linear classifier cannot replicate. Whether it justifies the 8 added parameters is a question for week 17, which compares against a *parameter-matched* classical MLP.
+A single `nn.Linear(4, 1)` (5 parameters, no quantum block) trained under the same protocol reaches **95 %** test accuracy. The hybrid model with 8 added quantum parameters reaches **100 %** — a **+5 pp** lift. That five-point gain is one test example out of 20, from a single seed (`SEED = 0`), so it is within noise. The quantum block does add a non-linear map that a linear classifier cannot represent, but this run does not show that the map helps. Whether it justifies the 8 added parameters is a question for week 17, which compares against a *parameter-matched* classical MLP.
 
 ## 6. The TorchLayer footgun (worth flagging)
 

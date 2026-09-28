@@ -1,0 +1,10 @@
+week,model,split,metric,mean,std,n_seeds
+week23,QAE,full,local_fid,0.9825,0.0214,5
+week24,QAE,test,recon_fid,0.9871,0.0258,5
+week24,QAE,all,spearman_r_pc1,-1.0000,0.0,1
+week24,UntrainedEncoder,all,abs_spearman_r_pc1,0.9994,0.0081,1000
+week25,QAE,test_p=0.0,local_fid,0.9707,0.0206,3
+week25,QAE,test_p=0.005,local_fid,0.8707,0.0090,3
+week25,QAE,test_p=0.02,local_fid,0.6778,0.0096,3
+week26,LinearAE,test,recon_fid,1.0000,0.0000,5
+week26,SmallAE,test,recon_fid,0.9811,0.0211,5

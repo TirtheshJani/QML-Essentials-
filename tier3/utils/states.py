@@ -103,10 +103,14 @@ def reduced_density_matrix(psi, keep_wires=CODE_WIRES):
 
 
 def local_fidelity(psi, encoder_unitary):
-    """Romero local cost: P(trash bits = 00) after encoding.
+    """Romero trash fidelity: P(trash bits = 00) after encoding.
 
-    For pure-state inputs this is also a tight surrogate for the
-    reconstruction fidelity (equality in the perfect-compression limit).
+    The name is historical: one minus this is the Romero training cost,
+    which is a global cost in Cerezo et al.'s (2021) terminology.
+
+    For a pure input, local_fidelity**2 <= reconstruction_fidelity <=
+    local_fidelity (checked in tier3/check_qae_bounds.py), so the two
+    agree in the perfect-compression limit.
     """
     enc = encoder_unitary @ psi
     T = enc.reshape(DIM_CODE, DIM_TRASH)
@@ -138,7 +142,8 @@ def reconstruction_fidelity(psi, encoder_unitary):
 def uhlmann_fidelity(rho, sigma):
     """F(rho, sigma) = (Tr sqrt(sqrt(rho) sigma sqrt(rho)))^2.
 
-    Used by week 25 to compare reconstructed density matrices under noise.
+    Not used by the week scripts: week 25 reports P(trash = 00) on the
+    noisy device instead.
     """
     from scipy.linalg import sqrtm
     sr = sqrtm(rho)
@@ -152,8 +157,9 @@ def effective_dimension(states, threshold=1e-6):
     """Number of singular values of the (k, 16) state matrix above `threshold`.
 
     Geometric upper bound on how many qubits a code must span to represent
-    the dataset losslessly. For H2 across r in [0.4, 2.5] A this is 4 — i.e.
-    a 2-qubit code is enough.
+    the dataset losslessly. For H2 across r in [0.4, 2.5] A this is 2 (week 22
+    measures singular values 4.584 and 0.993, the rest below 1e-15), so a
+    2-qubit code (4-dim) has room to spare.
     """
     s = np.linalg.svd(states, compute_uv=False)
     return int(np.sum(s > threshold)), s

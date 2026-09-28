@@ -25,7 +25,9 @@ quantum data" (QAE) without inventing fresh data.
 
 - Romero, Olson, Aspuru-Guzik, *Quantum autoencoders for efficient
   compression of quantum data*, **arXiv:1612.02806** (2017). Eq. 6 (local
-  trash-fidelity cost) is the training target. Sec. III.B is the H₂
+  trash-fidelity cost) is the training target. (As built it is called
+  the trash-fidelity cost: it projects onto both trash qubits, so it is
+  global in Cerezo et al.'s terms; see `TIER3_REVIEW.md` §2.) Sec. III.B is the H₂
   application that we will reproduce in spirit at smaller scale.
 - Schuld & Petruccione ch. 9 (autoencoders + state compression).
 - Tier 2 review §4 — five lessons that this plan operationalizes.
@@ -40,8 +42,8 @@ QAE checks every box from the Tier 2 review:
 | 2. real / noisy backend | week 25 swaps `default.qubit` → `default.mixed` + depolarizing channel |
 | 3. assertion-gated weeks | every script keeps the tier-1/2 assert pattern |
 | 4. barren-plateau monitoring early | week 23 logs gradient variance from epoch 1 |
-| 5. honest classical baseline | week 26 trains a parameter-matched classical AE |
-| 6. multi-seed reproducibility | every headline number reported as mean ± std over 5 seeds |
+| 5. honest classical baseline | week 26 trains classical AE baselines (planned as parameter-matched; as built they have 256 and 136 parameters to the QAE's 16, see `tier3/week26_notes.md`) |
+| 6. multi-seed reproducibility | every headline number reported as mean ± std over 5 seeds (as built: 3 seeds for the week 25 noise sweep) |
 
 It is also a *quantum-native* task: input is quantum states, output is
 quantum states. The classical baseline (PCA / classical AE on amplitude
@@ -59,7 +61,7 @@ of Tier 2's tabular-data fight.
   trainable regime per the week 14 / week 21 barren-plateau probe.
 - **Dataset:** H₂ ground states ψ(r) for r ∈ {0.4, 0.5, …, 2.5} Å. Generated
   with `tier2/utils/chem.py` so we exercise the Tier 2 pipeline.
-- **Cost function:** Romero local cost — `1 − E[P(trash = 00)]` over the
+- **Cost function:** Romero trash-fidelity cost — `1 − E[P(trash = 00)]` over the
   training distribution.
 - **Pass criteria:** assertion-gated in every script, mirroring
   `tier1/week8_checkpoint_bell_grover.py:151–154`.
@@ -72,7 +74,7 @@ tier3/
     __init__.py
     states.py        # H2 ground-state dataset, fidelity, partial-trace
     qae.py           # encoder ansatz, Romero cost, training loop
-    classical.py     # parameter-matched classical AE baseline
+    classical.py     # classical AE baselines (not parameter-matched)
   week22_qae_dataset.py            + week22_notes.md
   week23_qae_training.py           + week23_notes.md
   week24_generalization.py         + week24_notes.md
@@ -118,7 +120,7 @@ The actual QAE training run. This is where the model is born.
 
 - 4-qubit hardware-efficient encoder, depth = 4 layers (16 trainable
   parameters — well below the trainable cliff measured in week 14).
-- Romero local cost: `C(α) = 1 − (1/N) Σ_i P(trash bits = 0 | input ψ_i)`
+- Romero trash-fidelity cost: `C(α) = 1 − (1/N) Σ_i P(trash bits = 0 | input ψ_i)`
   computed via `qml.probs(wires=trash_wires)`.
 - Adam, lr = 0.05, 200 epochs, 5 seeds.
 - **Barren-plateau monitoring inline:** log gradient variance at epoch 0
@@ -163,13 +165,16 @@ The honest comparison. Tier 2 review item 5.
   the 16-dim state vector), bottleneck = 4, output ∈ ℝ³², MSE loss.
 - Match the trainable parameter count to the QAE's exactly (16 + small
   classical post-processing on the QAE side ≈ 32 classical parameters
-  for the AE — pick widths that hit this).
+  for the AE — pick widths that hit this). As built this was not
+  possible: a classical AE that reads all 32 inputs has at least 64
+  weights, and week 26 uses 256- and 136-parameter AEs.
 - Train on the same train/test split, 5 seeds, identical optimizer.
 - Compare on (a) reconstruction fidelity (after L2-normalizing the
   classical AE output and treating it as a quantum state) and (b) raw
   MSE.
 - Be honest in the writeup. The classical AE can in principle nail this
-  because the data lives in a 4-D linear subspace of ℝ³².
+  because the data lives in a 4-D linear subspace of ℝ³² (as built:
+  2-D, week 22).
 - Pass: head-to-head table exists with mean ± std over 5 seeds for both
   models; both numbers reported, neither cherry-picked.
 
@@ -189,6 +194,9 @@ Pull everything into one runnable artifact + a long-form review.
   (4) what would change before tier 4 / publication-quality work.
 - Pass: `week27_capstone.py` reproduces every headline number from
   weeks 23–26 within 2 std, writes the CSV + PNG, and asserts each gate.
+  As built, it re-checks the weekly pass gates loosened by 2 std and
+  does not compare against the weekly numbers (see
+  `tier3/week27_notes.md`).
 
 ## Critical files to modify
 

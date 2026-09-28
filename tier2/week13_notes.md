@@ -59,4 +59,4 @@ At the best $p = 3$ angles, the measurement distribution puts **91.6 %** of its 
 
 ## 7. Foreshadowing barren plateaus (week 14)
 
-At $n = 6$ the landscape is friendly: 10 random restarts always find a $\rho > 0.85$ basin. As $n$ grows, the gradient variance at random initialization decays as $\Theta(2^{-n})$ (McClean et al. 2018 for hardware-efficient ansätze; QAOA's exponential decay was confirmed by Wang et al. 2021). Week 14 measures this decay directly on the same circuit family — that is the point at which "watch optimization stall" becomes the lesson.
+At $n = 6$ the landscape is friendly: 10 random restarts always find a $\rho > 0.85$ basin. For sufficiently expressive hardware-efficient ansätze, the gradient variance at random initialization decays exponentially in the number of qubits $n$ (McClean et al., *Barren plateaus in quantum neural network training landscapes*, Nat. Commun. 9, 4812 (2018), DOI 10.1038/s41467-018-07090-4). Week 14 measures that decay on a hardware-efficient RY+CNOT ansatz, not on QAOA, so it does not show how QAOA's gradients scale.

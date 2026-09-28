@@ -25,7 +25,7 @@ Qiskit and PennyLane evaluate $\langle\psi(\gamma,\beta)|\hat H_C|\psi(\gamma,\b
 
 ## 5. The barren-plateau phenomenon
 
-McClean, Boixo, Smelyanskiy, Babbush, Neven (Nat. Commun. 2018) showed that for sufficiently expressive *hardware-efficient* ansätze, the gradient of the cost with respect to any single parameter has variance
+McClean, Boixo, Smelyanskiy, Babbush, Neven (Nat. Commun. 9, 4812 (2018), DOI 10.1038/s41467-018-07090-4) showed that for sufficiently expressive *hardware-efficient* ansätze, the gradient of the cost with respect to any single parameter has variance
 
 $$\mathrm{Var}\!\left[\frac{\partial\langle O\rangle}{\partial \theta_k}\right] \;=\; \mathcal{O}\!\big(2^{-n}\big),$$
 

@@ -44,7 +44,7 @@ The plan's pass criteria — *(a) some encoding > 0.95 and (b) angle vs amplitud
 
 ## 4. Reading the amplitude failure
 
-Amplitude at **30 %** test accuracy on a balanced 2-class problem is below chance — the model has confidently learned the wrong decision boundary. This is not a training failure; the loss does decrease from $0.98$ to $0.66$. It is a **representational failure**: amplitude embedding factors out norm and global sign, and the standardised Iris features differ between virginica and versicolor partly *in* their norms. The encoder discards exactly the information that distinguishes the classes.
+Amplitude at **30 %** test accuracy on a balanced 2-class problem is 6 of 20 test examples from one seed. That is below 50 %, but with 20 examples it is within noise of chance: the model has not learned a useful boundary (train accuracy 0.64), rather than a confidently wrong one. This is not a training failure; the loss does decrease from $0.98$ to $0.66$. It is a **representational failure**: amplitude embedding factors out norm and global sign, and the standardised Iris features differ between virginica and versicolor partly *in* their norms. The encoder discards exactly the information that distinguishes the classes.
 
 The honest takeaway is the one Schuld & Petruccione hammer in chapter 6 of *Machine Learning with Quantum Computers*: **encoding choice imposes a hard ceiling no amount of variational training can lift**. Capacity arguments based on Hilbert-space dimension are misleading — the embedding map is doing a lot of unstated work.
 

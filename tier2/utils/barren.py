@@ -1,6 +1,6 @@
 """Gradient-variance probe used by the barren-plateau studies (week 14, week 21).
 
-Following McClean et al. 2018 (Nat. Commun. 9:4812):
+Following McClean et al. 2018 (Nat. Commun. 9, 4812, DOI 10.1038/s41467-018-07090-4):
   - sample random parameters from U[0, 2 pi) for a hardware-efficient ansatz
   - measure d<O>/dtheta_0 for a fixed observable O via reverse-mode autodiff
   - Var over random samples decays exponentially with the qubit count n

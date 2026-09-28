@@ -29,10 +29,12 @@ Three reasons, all about quantum structure (Tier 2 review item 1):
 1. **Inputs are quantum states by construction.** No encoding choice to
    second-guess (which dominated the Tier 2 classifier results, week 15).
 2. **The dataset is geometrically simple.** We measured the singular
-   values of the stacked $(22, 16)$ amplitude matrix and the top 4 capture
-   > 99.9 % of the variance — i.e. the entire $r$-curve lives in a 4-D
-   linear subspace of $\mathbb{C}^{16}$. A 2-qubit code (also 4-D) is the
-   *minimal* quantum bottleneck that can fit the dataset losslessly.
+   values of the stacked $(22, 16)$ amplitude matrix: only two are
+   non-negligible (4.584 and 0.993; the rest are below $10^{-15}$), so the
+   entire $r$-curve lives in a 2-D linear subspace of $\mathbb{C}^{16}$,
+   spanned by $\ket{1100}$ and $\ket{0011}$. A 2-qubit code (4-D) fits the
+   dataset losslessly with room to spare; strictly, one code qubit would
+   already be enough.
 3. **It connects Tier 2 to Tier 3.** Same `qml.qchem` machinery; same
    chem helper; the QAE is now compressing the *output* of the VQE
    pipeline.
@@ -72,7 +74,7 @@ partial-trace implementation.
 ## Fidelity definitions used in Tier 3
 
 - **Pure-state overlap:** $F(\psi, \phi) = |\langle\psi | \phi\rangle|^2$.
-- **Local trash fidelity (Romero training cost):**
+- **Local trash fidelity (Romero training cost; global in Cerezo et al.'s 2021 terms, since the projector acts on all trash qubits):**
   $F_{\text{loc}}(\psi, U) = \langle U\psi |\, I_{\text{code}} \otimes \ket{0}\bra{0}_{\text{trash}}\, |U\psi \rangle$
   — i.e. probability of measuring the trash bits in $\ket{00}$ after
   encoding.
@@ -81,7 +83,7 @@ partial-trace implementation.
   — the textbook QAE fidelity of the full encode → discard → re-inject
   $\ket{00}$ → decode protocol.
 - **Uhlmann fidelity (mixed states):**
-  $F(\rho, \sigma) = \big(\mathrm{Tr}\sqrt{\sqrt\rho \, \sigma \, \sqrt\rho}\,\big)^2$ — used in week 25 for noisy reconstructions.
+  $F(\rho, \sigma) = \big(\mathrm{Tr}\sqrt{\sqrt\rho \, \sigma \, \sqrt\rho}\,\big)^2$, implemented in `tier3/utils/states.py` but not used by the week scripts (week 25 reports $P(\text{trash} = 00)$ on the noisy device instead).
 
 In the perfect-compression limit ($U\ket\psi = \ket{\phi_{\text{code}}}\ket{0}_{\text{trash}}$), all four metrics agree at 1. Local fidelity and
 reconstruction fidelity diverge only when compression is imperfect, which

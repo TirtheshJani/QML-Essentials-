@@ -24,42 +24,47 @@ decoder $\mathbf{c} \mapsto \hat{\mathbf{x}} = W_d \mathbf{c}$, with
 $W_e \in \mathbb{R}^{4 \times 32}$, $W_d \in \mathbb{R}^{32 \times 4}$.
 
 This is the classical *upper bound*. Because the H₂ ground-state set
-is a 4-D subspace of $\mathbb{C}^{16}$ (week 22 SVD), a 4-D linear
+is a 2-D subspace of $\mathbb{C}^{16}$ (week 22 SVD), a 4-D linear
 bottleneck *can* losslessly reconstruct the entire dataset. Trained
 to convergence, the linear AE will achieve ~1.0 fidelity. The QAE
-beating this would imply the dataset is *not* 4-D linear, which we know
-to be false.
+beating this would imply the dataset is *not* a low-dimensional linear
+subspace, which we know to be false.
 
-**Param-matched nonlinear AE (~32 params)** — the fair comparison: a
+**Small nonlinear AE (136 params)**, the closer small-model comparison: a
 $32 \to 2 \to 2 \to 2 \to 32$ AE with `tanh` non-linearities, no
-biases, code dim = 2. It's still bigger than the QAE's 16 parameters
-but it's the smallest sensible classical architecture that touches
-the full 32-D input space and uses a 2-D code matching the QAE's code
-qubits.
+biases, code dim = 2 ($2{\times}32 + 2{\times}2 + 2{\times}2 +
+32{\times}2 = 136$ weights, printed by the script). It is not
+parameter-matched: it has 136 weights to the QAE's 16. It is a small
+architecture that touches the full 32-D input space and has a 2-number
+code, one per QAE code qubit.
 
 We can't get the classical AE down to 16 parameters and still touch
 all 32 input axes — a $32 \to 1$ encoder has 32 parameters by itself.
 This **structural asymmetry** is itself one of the points of this
 week: the parameter-counting argument doesn't translate cleanly between
-quantum and classical models. The QAE's 16 *complex-amplitude*
-parameters generate a Lie group transformation on a 16-D Hilbert space,
-which is genuinely more expressive per parameter than 16 real linear
-weights.
+quantum and classical models.
 
 ## Expected ranking
 
 From the dataset's geometric structure:
 
 1. Linear AE → ~1.0 (oracle on a linear subspace)
-2. QAE → 0.95 ± few pp (limited by the local-cost surrogate gap)
-3. Matched nonlinear AE → 0.85 ± noise (small, has to learn)
+2. QAE → 0.95 ± few pp (limited by the trash-fidelity surrogate gap)
+3. Small nonlinear AE → 0.85 ± noise (small, has to learn)
+
+Measured (pinned `requirements.txt`, 5 seeds, test reconstruction
+fidelity): linear AE 1.0000 ± 0.0000, QAE 0.9871 ± 0.0258, small AE
+0.9811 ± 0.0211. The ranking held, but the small AE did far better
+than predicted and sits within one standard deviation of the QAE.
 
 This is not a story of quantum advantage on this specific dataset. The
 H₂ ground-state manifold is *too easy* for the classical baseline at
-unconstrained capacity. The QAE's interest comes from elsewhere:
+unconstrained capacity. The QAE's interest comes from elsewhere, and
+not from compression power: on any dataset its mean trash fidelity is
+at most the sum of the top 4 eigenvalues of the states' average density
+matrix, which a rank-4 linear projection reaches (`TIER3_REVIEW.md`
+§4.2). What is left is data access:
 
-- it doesn't *need* the dataset to be linear in amplitude space (week
-  27 capstone could swap the dataset for non-linear families);
 - it operates on the actual quantum state, which on real hardware
   cannot be exposed as an amplitude vector to a classical AE without
   expensive tomography;
@@ -73,7 +78,7 @@ unconstrained capacity. The QAE's interest comes from elsewhere:
 
 - 5-seed mean ± std for each of three models on test reconstruction
   fidelity.
-- QAE − matched and QAE − linear deltas in pp.
+- QAE − small AE and QAE − linear deltas in pp.
 - A note that the linear AE is an oracle, not a fair fight.
 
 ## Pass criterion

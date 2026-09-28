@@ -1,0 +1,74 @@
+POST-HOC check, written in review round 4 after all week 22-27 results
+were known. Not a gate; no week script or threshold depends on it.
+
+1. Eigenvalues of the ensemble's average density matrix
+-------------------------------------------------------
+  22 states (week 23 training set) : lambda1 0.955139, lambda2 0.044861, rest below 1.0e-48 in size
+  11 train states (week 24)        : lambda1 0.955872, lambda2 0.044128
+  min over the 22 states of |<v1|psi>|^2 : 0.8929 (at r = 2.50)
+
+2. Constant-code encoder (code state identical for every r)
+-----------------------------------------------------------
+  built from                    all 22   train    test
+  22 states (week 23)    local  0.9551  0.9557  0.9546
+  22 states (week 23)    recon  0.9551  0.9557  0.9546
+                         largest change in the code-state features across r: 8.9e-16
+  train half (week 24)   local  0.9549  0.9559  0.9540
+  train half (week 24)   recon  0.9549  0.9559  0.9540
+                         largest change in the code-state features across r: 7.8e-16
+  week 23 gates (built from the 22 states):
+    mean local fid > 0.95 : 0.9551 pass
+    mean recon fid > 0.93 : 0.9551 pass
+  week 24 gates (built from the train half):
+    train local fid > 0.95: 0.9559 pass
+    test local fid > 0.90 : 0.9540 pass
+    test recon fid > 0.85 : 0.9540 pass
+    held-out gap < 0.10   : +0.0019 pass
+    |Spearman(r, PC1)| > 0.9: not defined (the code state does not change with r)
+
+3. Trained encoders: which data directions does each seed keep?
+---------------------------------------------------------------
+  P = U^dag (I_code x |00><00|) U; v1, v2 from the states each run trained on.
+  loc = mean P(trash=00) on those states; test rec = mean reconstruction fidelity on the 11 odd-index r.
+  Spearman(r, PC1) over all 22 states, as in week 24 (gate |rho| > 0.9 is applied to seed 0 only).
+
+  week 23 (22 states): 1 - lambda1 = 0.044861
+  seed final loss    loss range, last 20 |grad|@end <v1|P|v1> <v2|P|v2> Spearman     loc test rec
+     0   0.000017   9.55e-06 to 2.14e-04     0.0015    1.0000    0.9996  -1.0000  1.0000   1.0000
+     1   0.042598   4.26e-02 to 4.41e-02     0.0100    0.9999    0.0562  -1.0000  0.9576   0.9196
+     2   0.044861   4.49e-02 to 4.49e-02     0.0000    1.0000    0.0000  +0.0830  0.9551   0.9389
+     3   0.000000   3.45e-08 to 1.36e-06     0.0001    1.0000    1.0000  -1.0000  1.0000   1.0000
+     4   0.000000   2.73e-08 to 8.73e-07     0.0001    1.0000    1.0000  -1.0000  1.0000   1.0000
+
+  week 24 (train half): 1 - lambda1 = 0.044128
+  seed final loss    loss range, last 20 |grad|@end <v1|P|v1> <v2|P|v2> Spearman     loc test rec
+     0   0.000013   1.08e-05 to 3.02e-04     0.0013    1.0000    0.9997  -1.0000  1.0000   1.0000
+     1   0.000020   2.04e-05 to 2.89e-05     0.0003    1.0000    0.9999  -1.0000  1.0000   1.0000
+     2   0.044128   4.41e-02 to 4.41e-02     0.0000    1.0000    0.0000  +0.2355  0.9559   0.9355
+     3   0.000000   8.77e-08 to 1.03e-06     0.0001    1.0000    1.0000  -1.0000  1.0000   1.0000
+     4   0.000000   8.19e-08 to 2.06e-06     0.0001    1.0000    1.0000  -1.0000  1.0000   1.0000
+
+4. Week-24 encoders under the week-25 noise model (no retraining)
+-----------------------------------------------------------------
+  week-24 seed 0: <v1|P|v1> 1.0000, <v2|P|v2> 0.9997
+  week-24 seed 2: <v1|P|v1> 1.0000, <v2|P|v2> 0.0000
+  test P(trash=00); random = the week-25 random encoders (n=20, mean +/- std)
+       p   seed 0   seed 2             random  seed 2 - random
+  0.0000   1.0000   0.9540    0.2619 +/- 0.1325        +69.21 pp
+  0.0010   0.9740   0.9351    0.2616 +/- 0.1278        +67.35 pp
+  0.0050   0.8788   0.8648    0.2606 +/- 0.1111        +60.42 pp
+  0.0100   0.7768   0.7879    0.2595 +/- 0.0934        +52.84 pp
+  0.0200   0.6191   0.6638    0.2579 +/- 0.0669        +40.59 pp
+  week 25 gates applied to these encoders (thresholds copied from week25, unchanged):
+    seed 0: noiseless train > 0.95 1.0000 pass; test at 0.005 > 0.85 0.8788 pass; gap > 30 pp +61.82 pass; monotone pass
+    seed 2: noiseless train > 0.95 0.9559 pass; test at 0.005 > 0.85 0.8648 pass; gap > 30 pp +60.42 pass; monotone pass
+
+5. Week 25 retrained at p = 0.005: which directions does each seed keep?
+------------------------------------------------------------------------
+  noiseless P of each trained encoder; v1, v2 from the train half
+  seed test P00 at 0.005 <v1|P|v1> <v2|P|v2>
+     0            0.8586    0.9998    0.0034
+     1            0.8802    0.9993    0.9904
+     2            0.8733    0.9999    0.0001
+  trained mean (as in week 25): 0.8707 +/- 0.0090; week-24 seed 2 (section 4): 0.8648, -0.0058 from the trained mean; week-24 seed 0: 0.8788
+  seeds with <v2|P|v2> < 0.5 (keep v1 only): 2 of 3

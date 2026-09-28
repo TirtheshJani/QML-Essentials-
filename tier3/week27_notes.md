@@ -2,12 +2,16 @@
 
 ## Purpose
 
-One runnable script that reproduces the four headline numbers from
-weeks 23–26 in a single execution, writes a results CSV and a 4-panel
-figure, and asserts that none of the prior weeks' results regressed by
-more than 2σ on this consolidated run.
+One runnable script that reruns weeks 23–26 in a single execution,
+writes a results CSV and a 4-panel figure, and re-checks the weekly pass
+gates on this consolidated run, three of them loosened by 2σ of the
+run. It does not compare its numbers with the weekly scripts' output.
+Every run is seeded, and on the pinned `requirements.txt` the capstone
+printed the same values as weeks 23–26 to 4 decimals (week 23 local
+fidelity 0.9825 ± 0.0214, week 24 test reconstruction 0.9871 ± 0.0258,
+week 25 at $p = 0.005$ 0.8707 ± 0.0090, week 26 small AE 0.9811 ± 0.0211).
 
-## What's reproduced
+## What's re-checked
 
 | Weekly result | Capstone target | Pass margin |
 |------|------|------|
@@ -16,6 +20,16 @@ more than 2σ on this consolidated run.
 | week 24: $\lvert\rho_{\text{Spearman}}(r, \text{PC1})\rvert$ | $> 0.9$ | yes |
 | week 25: $p = 0.005$ test fidelity | $\ge 0.85 - 2\sigma$ | yes |
 | week 26: linear AE test fidelity (oracle) | $> 0.95$ | yes |
+
+The Spearman gate also passes for 999 of 1000 untrained encoders (the
+week-24 control, written to the CSV as the `UntrainedEncoder` row), so
+it checks the latent pipeline, not what training learned. The week 23
+and 24 fidelity gates, loosened or not, also pass for an encoder that
+keeps only the states' dominant eigenvector and gives every $r$ the same
+code state, and the week 25 gate passes for week-24 seed 2, which keeps
+only that eigenvector (post-hoc, `tier3/check_dominant_eigvec_baseline.py`).
+So they show that the dominant direction is compressed, not that the
+code carries $r$.
 
 5 seeds for everything except the noise sweep (3 seeds, since
 `default.mixed` is roughly 4× slower than `default.qubit`). The reduced
@@ -32,7 +46,8 @@ shape of the curve, not the full 5-point sweep from week 25.
   - (b) latent trajectory $(\text{PC1}, \text{PC2})$ colored by $r$
   - (c) noise robustness errorbars
   - (d) head-to-head reconstruction fidelity bar chart
-    (QAE vs matched-classical vs linear-classical oracle)
+    (QAE vs the 136-parameter nonlinear AE vs the linear-AE oracle;
+    neither classical AE is parameter-matched to the QAE's 16)
 
 ## Why a capstone, not just a notebook
 
@@ -56,7 +71,11 @@ Two reasons consistent with how Tier 1 and Tier 2 ended:
 - Week 26 retrains (5 seeds × 2 classical AEs × 200 epochs): ~30 sec
 
 Total: ~22 min on a laptop CPU. Faster than the sum of weeks 23–26
-because we skip the per-week plot generation.
+mainly because the noise sweep runs 3 noise levels instead of 5, scores
+only the test split and has no random-encoder baseline (week 25 scores
+20 random encoders at every $p$), and week 26's QAE numbers reuse the
+week 24 training instead of retraining. Plotting is not what saves the
+time: the capstone even adds one training run for panel (a).
 
 ## What this is *not*
 
@@ -67,4 +86,4 @@ follow-up.
 
 The cross-tier writeup (`TIER3_REVIEW.md`) is the place where the
 *meaning* of these numbers is discussed. Week 27's job is to produce
-the numbers and the figure; week's review interprets them.
+the numbers and the figure; the review interprets them.

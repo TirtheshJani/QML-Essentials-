@@ -1,8 +1,70 @@
 # QML-Essentials
 
+[![CI](https://github.com/TirtheshJani/QML-Essentials-/actions/workflows/ci.yml/badge.svg)](https://github.com/TirtheshJani/QML-Essentials-/actions/workflows/ci.yml)
+
 A self-paced Quantum Machine Learning curriculum for someone with a strong
 classical ML and physics background, new to quantum computing. Realistic
 target: ~5–6 months to genuine fluency at 5–7 hrs/week.
+
+## For reviewers
+
+This repo is the curriculum as runnable scripts: circuit basics
+(`tier1/`), core QML with VQE, QAOA, a variational classifier and a
+quantum kernel (`tier2/`), and a 4-qubit, 16-parameter quantum
+autoencoder (QAE) trained on H₂ ground states (`tier3/`). CI runs every
+week script. The numbers below are what the scripts print with the
+pinned `requirements.txt` on Python 3.11; ± is the population standard
+deviation across seeds (numpy's default, ddof = 0). The tier 3 capstone
+reruns weeks 23-26 and writes the QAE and classical-AE rows to
+`tier3/week27_summary.csv` and `tier3/week27_results.png`.
+
+| tier 3 result (test = 11 held-out bond lengths) | value |
+|------|------:|
+| QAE trash fidelity P(trash=00), all 22 states, 5 seeds (week 23) | 0.9825 ± 0.0214 |
+| QAE test reconstruction fidelity, 5 seeds (week 24) | 0.9871 ± 0.0258 |
+| Same two metrics for an encoder that keeps only the states' dominant eigenvector, with one code state for every r (post-hoc check) | 0.9551 / 0.9540 |
+| Spearman(r, latent PC1), seed 0 (week 24); 1000 untrained encoders give median abs. value 1.000 | -1.000 |
+| QAE test trash fidelity P(trash=00) at depolarizing p = 0.005, 3 seeds (week 25) | 0.8707 ± 0.0090 (20 random encoders: 0.2606 ± 0.1111) |
+| Same, for week-24 seed 2 (keeps only the dominant eigenvector), not retrained under noise (post-hoc check) | 0.8648 |
+| Linear classical AE, 256 params, test reconstruction (week 26) | 1.0000 ± 0.0000 |
+| Nonlinear classical AE, 136 params, test reconstruction (week 26) | 0.9811 ± 0.0211 |
+
+Five caveats. The 22 H₂ states span only a 2-D subspace, so the linear
+AE reconstructs them exactly and the QAE cannot beat it. Because of that
+geometry the Spearman row is a property of the data, not of training
+(every state is cos t|1100⟩ + sin t|0011⟩, and 999 of 1000 untrained
+encoders also pass the |ρ| > 0.9 gate), and the held-out split tests
+interpolation, not generalization (the training fidelities fix the
+held-out ones, including at r = 2.5, just outside the training range).
+The states' average density matrix has one eigenvalue of 0.955, so an
+encoder that keeps only that eigenvector passes the week 23 and 24
+fidelity gates even when its code state is the same for every r, and
+week-24 seed 2, which keeps only that eigenvector, passes every week 25
+gate without retraining: those gates show that the dominant direction
+is compressed, not that the code carries r (post-hoc,
+`tier3/check_dominant_eigvec_baseline.py`). Neither classical AE is
+parameter-matched to the QAE's 16 parameters, and the QAE and the
+136-parameter AE tie within one standard deviation; the only
+parameter-matched comparison in this repo is tier 2 week 17, where a
+13-parameter MLP edges out a 13-parameter hybrid by 2 pp (0.943 vs 0.923
+mean test accuracy), within seed noise (3 seeds, 20 test examples, where
+one example is 5 pp). In week 23, seed 2 stops at that
+dominant-eigenvector encoder (loss 1 − λ₁ = 0.0449) and seed 1 (0.958)
+is still close to it when training ends at epoch 200, which misses my
+std < 0.02 gate (committed with the scripts in 71ca939, threshold
+unchanged since; `TIER3_REVIEW.md` §5 has the history); the script
+reports the miss rather than failing. `TIER3_REVIEW.md` has the full
+writeup.
+
+To reproduce tier 3 in one script (about 22 minutes on 4 CPU cores):
+
+```bash
+python3.11 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python tier3/week27_capstone.py
+```
+
+The loop under "Repo evolution" below runs every week script.
 
 ## Frameworks
 
@@ -15,13 +77,13 @@ target: ~5–6 months to genuine fluency at 5–7 hrs/week.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install pennylane qiskit qiskit-machine-learning numpy matplotlib torch
+pip install -r requirements.txt   # pinned; tested on Python 3.11
 ```
 
 ## How to use this repo
 
 Each tier grows its own directory (`tier1/`, `tier2/`, `tier3/`) as I work
-through it. Every commit is one runnable notebook or script — a checkpoint,
+through it. Each week is one runnable script plus notes: a checkpoint,
 not a proof. The roadmap below is the spine; the linked resources are the
 muscle.
 
@@ -108,24 +170,33 @@ on the H₂ ground-state manifold from the Tier 2 VQE pipeline. Detail in
 Build the H₂ ground-state dataset, partial-trace utilities, and the
 fidelity / Uhlmann-fidelity helpers (`tier3/utils/states.py`).
 
-### 3B. QAE training + generalization (weeks 23–24) ✓
+### 3B. QAE training + held-out interpolation (weeks 23–24) ✓
 4-qubit, 16-parameter, depth-4 RY+CNOT encoder trained on the Romero
-local cost; 5-seed mean-±-std reporting; held-out generalization +
-latent-space monotonicity (Spearman-ρ test on $r$ vs PC1 of $\rho_{\text{code}}$).
+trash-fidelity cost (a global cost in the terminology of
+[Cerezo et al. 2021](https://doi.org/10.1038/s41467-021-21728-w));
+5-seed mean-±-std reporting; a held-out split (on this 2-D dataset it
+tests interpolation, not generalization) and a latent-space Spearman-ρ
+test on $r$ vs PC1 of $\rho_{\text{code}}$, with an untrained-encoder
+control that passes the same test.
 
 ### 3C. Noise robustness (week 25) ✓
 Switch from `default.qubit` → `default.mixed` with depolarizing channel
 noise; sweep $p \in \{0, 10^{-3}, 5\cdot10^{-3}, 10^{-2}, 2\cdot10^{-2}\}$;
-trained-vs-random baseline at every noise level.
+trained QAE (3 seeds) vs 20 seeded random encoders at every noise level.
 
 ### 3D. Classical autoencoder baselines (week 26) ✓
-Linear AE oracle (256 params) and a parameter-matched nonlinear AE for
-the honest comparison; both reported, neither cherry-picked.
+Linear AE oracle (256 params) and a small nonlinear AE (136 params; not
+parameter-matched to the QAE's 16) for the honest comparison; both
+reported, neither cherry-picked.
 
 ### Capstone — week 27 ✓
 `tier3/week27_capstone.py` reruns weeks 23–26 in one execution, writes
-`week27_summary.csv` + a 2×2 figure panel, and asserts every prior
-weekly headline within 2σ. Cross-tier writeup in `TIER3_REVIEW.md`.
+`week27_summary.csv` + a 2×2 figure panel, and re-checks the weekly
+pass gates (the week 23, 24 and 25 fidelity gates loosened by 2σ of the
+run). It does not compare against the weekly scripts' numbers, but
+every run is seeded, and on the pinned requirements its numbers match
+weeks 23–26 to the printed 4 decimals. Cross-tier writeup in
+`TIER3_REVIEW.md`.
 
 ---
 
@@ -171,16 +242,27 @@ tiers:
 - `tier3/` — 6 weeks on the H₂-ground-state quantum autoencoder
   (`TIER3_PLAN.md` → weeks 22–27 → `TIER3_REVIEW.md` → capstone CSV +
   figure).
-- `requirements.txt` covers every tier's deps.
+- `requirements.txt` pins every tier's deps (tested on Python 3.11).
+- `.github/workflows/ci.yml` runs every week script, one job per tier.
 
 Each tier directory holds flat `weekN_<topic>.py` + `weekN_notes.md`
-files plus a `utils/` submodule for shared helpers. Every week is a
-self-checking script: assertion-gated `main()`, exits non-zero if any
-gate fails. From a clean checkout:
+files; tiers 2 and 3 also hold a `utils/` submodule for shared helpers,
+and two checks sit next to the tier 3 weeks that the loop below does
+not run: `tier3/check_qae_bounds.py` (two QAE fidelity bounds) and the
+post-hoc `tier3/check_dominant_eigvec_baseline.py` (output committed as
+`check_dominant_eigvec_baseline.log`). Every week from week 8 on is
+a self-checking script: assertion-gated `main()`, exits non-zero if
+any gate fails; tier 1 weeks 1-7 are print-only
+walkthroughs that fail only if they crash. One gate is reported rather
+than asserted: week 23's across-seed std gate, which the first recorded
+full run missed, prints `MISSED gate committed in 71ca939` (see
+`tier3/week23_notes.md`). From a clean checkout:
 
 ```bash
 pip install -r requirements.txt
 for f in tier{1,2,3}/week*.py; do echo "== $f =="; python "$f" || exit 1; done
 ```
 
-is the green-or-red signal for the whole curriculum.
+is the green-or-red signal for the whole curriculum. The loop rewrites
+`tier2/week20_results.csv` on every run: its `wall_s` column is
+wall-clock time, so `git status` shows it as modified afterwards.

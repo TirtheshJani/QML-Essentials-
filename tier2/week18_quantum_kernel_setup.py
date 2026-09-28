@@ -3,11 +3,11 @@
 Tier 2 / 2D.1. Working through:
   - the data-encoding -> kernel-matrix pipeline
         K(x, x') = |<phi(x) | phi(x')>|^2,    |phi(x)> = U_ZZ(x) |0...0>
-  - ZZFeatureMap (Havlicek et al. 2019, Suzuki et al. 2020):
+  - ZZFeatureMap (Havlicek et al. 2019, arXiv:1804.11326):
       H^n - U_Z(x) - H^n - U_Z(x), with U_Z(x) = prod_i exp(i x_i Z_i)
                                                  prod_{i<j} exp(i (pi - x_i)(pi - x_j) Z_i Z_j)
-  - building a 40-point Iris (1 vs 2) Gram matrix via FidelityQuantumKernel
-  - PSD verification (min eigenvalue ~ 0); spectrum and condition number;
+  - building a 40-point Iris (0 vs 1) Gram matrix via FidelityQuantumKernel
+  - PSD verification (min eigenvalue >= -1e-8); spectrum and condition number;
     diagonal = 1 (each |phi(x)> is a normalised pure state)
 """
 
@@ -68,9 +68,10 @@ def text_heatmap(K, labels, title="K"):
 def main():
     section("1. Data: 40-point Iris-0-vs-1 subset, MinMax-scaled to [0, pi]")
     # Use the easy pair (setosa vs versicolor) for the kernel pipeline so the
-    # SVM in week 19 has a clear signal. Pair (1, 2) is harder and runs into
-    # ZZ feature-map kernel concentration -- which week 20 demonstrates by
-    # sweeping the reps parameter.
+    # SVM in week 19 has a clear signal. Pair (1, 2) is harder: its kernel
+    # values barely separate the classes. Week 20 sweeps the reps parameter
+    # and, as a post-hoc control, the input scale, which matters more at
+    # 4 qubits (week20_notes.md, section 3).
     # MinMax scaling to [0, pi] is the Havlicek-paper convention for the ZZ
     # feature map; it keeps the (pi - x_i)(pi - x_j) terms in [0, pi^2] rather
     # than blowing past 2 pi which destroys the kernel structure.

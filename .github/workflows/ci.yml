@@ -1,0 +1,40 @@
+name: CI
+
+# Runs every week script exactly like the README loop, one job per tier
+# (tier 3 alone took about 50 minutes on a 4-core machine, so the tiers
+# run in parallel). Each job fails on the first script that exits non-zero.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  weeks:
+    name: tier${{ matrix.tier }} week scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        tier: [1, 2, 3]
+    env:
+      MPLBACKEND: Agg
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install pinned requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tier${{ matrix.tier }} week scripts
+        run: |
+          for f in tier${{ matrix.tier }}/week*.py; do echo "== $f =="; python "$f" || exit 1; done

@@ -1,11 +1,15 @@
 # Tier 3 Review — Quantum Autoencoder for H₂ Ground States
 
 Tier 3 (weeks 22–27) trained a 4-qubit quantum autoencoder on a 1-parameter
-family of H₂/STO-3G ground states, evaluated generalization, swept
-depolarizing noise on `default.mixed`, and compared head-to-head against
-two classical autoencoder baselines. Every weekly script is assertion-gated
-and the week-27 capstone re-runs the whole pipeline at 5 seeds (3 for the
-noise sweep) with a 2σ regression check on every headline number.
+family of H₂/STO-3G ground states, evaluated it on a held-out split (which
+here tests interpolation), swept depolarizing noise on `default.mixed`,
+and compared head-to-head against two classical autoencoder baselines. Every weekly script is assertion-gated
+(week 23 reports one missed gate instead of failing, see §1.1)
+and the week-27 capstone re-runs weeks 23–26 at 5 seeds (3 for the noise
+sweep) and re-checks the weekly pass gates, the week 23–25 fidelity gates
+loosened by 2σ of the run. It does not compare against the weekly
+numbers, but every run is seeded, and on the pinned requirements it
+reproduces weeks 23–26 to the printed 4 decimals.
 
 This review is the structural twin of `TIER2_REVIEW.md`: what the artifact
 demonstrated, where barren plateaus did and didn't appear, the honest
@@ -14,86 +18,184 @@ publication-quality follow-up.
 
 ## 1. What the QAE actually demonstrated
 
-### 1.1 Compression worked at the geometric minimum
+### 1.1 Compression worked, with room to spare
 
-The H₂ ground-state set lives in a 4-D linear subspace of $\mathbb{C}^{16}$
-(week 22 SVD: top 4 singular values capture > 99.9 % of variance). A
-2-qubit code is the *minimal* quantum bottleneck that can fit it
-losslessly. The QAE saturated the achievable bound:
+The H₂ ground-state set lives in a 2-D linear subspace of $\mathbb{C}^{16}$
+(week 22 SVD: singular values 4.584 and 0.993, the rest below $10^{-15}$;
+every state is a real combination of $\ket{1100}$ and $\ket{0011}$). A
+2-qubit code (4-D) fits it losslessly with room to spare; strictly, one
+code qubit would already be enough. Numbers below are what the scripts
+print with the pinned `requirements.txt`:
 
 | metric | mean ± std (5 seeds) |
 |------|------:|
-| training local fidelity (full curve) | **0.987 ± 0.011** |
-| training reconstruction fidelity | **0.972 ± 0.014** |
-| held-out test reconstruction fidelity | **0.946 ± 0.018** |
-| generalization gap (recon, train − test) | **+2.6 pp** |
-| init gradient norm $\|\nabla C\|_2$ | 1.31 |
-| final gradient norm $\|\nabla C\|_2$ | 4.6 × 10⁻³ |
+| training local fidelity (full curve, week 23) | **0.9825 ± 0.0214** |
+| training reconstruction fidelity (full curve, week 23) | **0.9719 ± 0.0349** |
+| held-out test reconstruction fidelity (week 24) | **0.9871 ± 0.0258** |
+| held-out (interpolation) gap (recon, train − test, week 24) | **+0.05 pp** |
+| init gradient norm $\|\nabla C\|_2$ (week 23) | 0.44 |
+| final gradient norm $\|\nabla C\|_2$ (week 23) | 2.3 × 10⁻³ |
 
-The 16-parameter, depth-4 RY+CNOT encoder (matched parameter count to
-*exactly* the quantum block from Tier 2 week 21) reaches near-perfect
-local fidelity and stays well above the held-out gate. The local-cost-vs-
-reconstruction-fidelity gap that the Romero paper warns about closed to
-~1.5 pp at convergence — i.e. the local cost was a tight surrogate.
+The 16-parameter, depth-4 RY+CNOT encoder (twice the 8 quantum weights
+of the Tier 2 week 21 block) reaches local fidelity 1.0000 on seeds 0, 3
+and 4 in week 23. Seed 2 stops at a stationary point at 0.9551
+(gradient norm 0.0000 at the last epoch): an encoder that keeps only
+the dominant eigenvector (described below), with loss
+$1 - \lambda_1 = 0.044861$. Seed 1 (0.9576) is still on a slow plateau
+at epoch 200 (gradient norm 0.010), close to the same encoder, the
+plateau near cost 0.04 that seed 0 left at about epoch 130
+(`tier3/week23_loss_curves.png`). Together they put the across-seed
+std at 0.0214, which misses the std < 0.02 gate committed with the
+scripts in 71ca939 (threshold unchanged since); the script reports the
+miss rather than hiding it (`tier3/week23_notes.md`). The held-out gate
+passes: in week 24, four seeds reconstruct the unseen bond lengths at
+1.0000 and seed 2 at 0.9355, below the 0.9540 of an encoder whose
+decoder returns the same state for every input (below). On this 2-D
+linear dataset that is interpolation, not generalization: the 11
+training states span the subspace that holds the test states, and there
+both fidelities are fixed polynomials of the state, so held-out fidelity follows from training fidelity for any
+encoder. That includes $r = 2.5$, the one test bond length just outside
+the training range (which ends at 2.4). Reconstruction fidelity in week
+23 is 1.1 pp below local (trash) fidelity (0.9719 vs 0.9825). That
+closeness is guaranteed, not found: for a pure input, $F_{\text{loc}}^2 \le F_{\text{recon}} \le
+F_{\text{loc}}$ (`tier3/check_qae_bounds.py`), so high trash fidelity
+forces high reconstruction fidelity, and the 5-seed means sit inside
+that range ($0.9825^2 = 0.9653$).
 
-### 1.2 The latent code recovered the bond-length axis
+**What these fidelity gates cannot show (post-hoc).**
+`tier3/check_dominant_eigvec_baseline.py`, written in review round 4
+after these results were known (its output is committed next to it as
+`check_dominant_eigvec_baseline.log`), sets the level the gates would
+have to clear to say anything about $r$. The states' average density
+matrix has two nonzero eigenvalues, $\lambda_1 = 0.955139$ and
+$\lambda_2 = 0.044861$ (0.955872 and 0.044128 for the 11 training
+states), with eigenvectors $v_1$ and $v_2$. An encoder that sends $v_1$
+to one fixed code state with trash $00$ and $v_2$ to the same code state
+with trash $01$ gives every $r$ the same code state, yet both of its
+fidelities equal $|\langle v_1|\psi\rangle|^2$: 0.9551 over the 22
+states, and 0.9559 train / 0.9540 test when built from the training
+half. It passes every week-23 and week-24 fidelity gate. Seed 2 is an
+encoder of this kind in both weeks: it keeps only $v_1$ (with
+$P = U^\dagger (I_{\text{code}} \otimes \ket{00}\bra{00}) U$,
+$\langle v_1|P|v_1\rangle = 1.0000$ and
+$\langle v_2|P|v_2\rangle = 0.0000$), its final loss equals
+$1 - \lambda_1$ to six decimals, and Spearman$(r, \text{PC1})$ is
+$+0.08$ (week 23) and $+0.24$ (week 24). Week-23 seed 1 keeps little of
+$v_2$ at epoch 200 ($\langle v_2|P|v_2\rangle = 0.056$). The seeds that
+reach 1.0000 keep both directions ($\langle v_2|P|v_2\rangle \ge
+0.9996$). So the mean-fidelity gates pass for an encoder that carries no
+information about $r$; they cannot tell such a code from one that
+tracks $r$.
+
+### 1.2 The latent arc is a property of the data, not of training
 
 Week 24 projected the encoded code-qubit reduced density matrices onto
 their PCA axes across the 22 $r$ values. Spearman rank correlation
 between $r$ and PC1 of $\rho_{\text{code}}$ came out at
-$\rho_{\text{Spearman}} = +0.998$ (seed-0 model). The latent trajectory
-is a smooth 1-D arc parameterized by the bond length, with no fold-overs
-or discontinuities.
+$\rho_{\text{Spearman}} = -1.000$ (seed-0 model; the sign of a PCA axis
+is arbitrary, so $|\rho| = 1.000$), with PC1 carrying 97.5 % of the
+variance. The latent trajectory is a smooth 1-D arc with no fold-overs
+(`tier3/week24_latent_trajectory.png`).
 
-This is the part that's not just "the cost is low" — it's *interpretable
-compression*. The encoder discovered that the only varying physical
-parameter in the dataset is $r$, and used its 2-qubit code as a
-1-parameter encoding of that axis (with one extra "noise" axis that
-spreads orthogonally and carries no physical signal).
+That is not evidence that the encoder discovered $r$. Every state is
+$\cos t\,\ket{1100} + \sin t\,\ket{0011}$ with $t$ moving monotonically
+in $r$, so any encoder maps the curve to a smooth arc of code states.
+The week-24 control runs the same features, PCA and Spearman on 1000
+untrained RY+CNOT encoders with seeded random angles: median
+$|\rho| = 1.0000$, mean $0.9994 \pm 0.0081$, and 999 of 1000 pass the
+week-24 $|\rho| > 0.9$ gate. No encoder at all (the identity)
+also gives $|\rho| = 1.000$. The monotone latent arc is a property of
+the data, and for an untrained encoder the Spearman gate could
+essentially not fail. A trained encoder can fail it: seed 2, which keeps
+only $v_1$ (§1.1), gives $+0.08$ (week 23) and $+0.24$ (week 24), but the
+gate is applied to seed 0 only.
 
 ### 1.3 Noise robustness was real but limited
 
-| depolarizing rate $p$ | trained-test fidelity | random-encoder | Δ |
-|---:|---:|---:|---:|
-| 0.000 | 0.95 ± 0.02 | 0.27 | **+68 pp** |
-| 0.001 | 0.92 ± 0.02 | 0.27 | **+65 pp** |
-| 0.005 | 0.87 ± 0.03 | 0.26 | **+61 pp** |
-| 0.010 | 0.81 ± 0.04 | 0.26 | **+55 pp** |
-| 0.020 | 0.71 ± 0.05 | 0.25 | **+46 pp** |
+Week 25, test local fidelity $P(\text{trash} = 00)$, mean ± std over 3
+seeds for the trained QAE and over 20 seeded random (untrained) encoders,
+the same 20 at every $p$:
 
-Per-gate $p \approx 5\times10^{-3}$ corresponds to current IBM 2-qubit
-gate error rates. At that operating point the trained QAE was 61 pp
-above a random encoder — not a small effect — but the absolute fidelity
-has dropped from 0.95 to 0.87. That delta would compound in any
+| depolarizing rate $p$ | trained-test fidelity | random encoders (20) | Δ |
+|---:|---:|---:|---:|
+| 0.000 | 0.971 ± 0.021 | 0.2619 ± 0.1325 | **+71 pp** |
+| 0.001 | 0.948 ± 0.018 | 0.2616 ± 0.1278 | **+69 pp** |
+| 0.005 | 0.871 ± 0.009 | 0.2606 ± 0.1111 | **+61 pp** |
+| 0.010 | 0.803 ± 0.011 | 0.2595 ± 0.0934 | **+54 pp** |
+| 0.020 | 0.678 ± 0.010 | 0.2579 ± 0.0669 | **+42 pp** |
+
+The $p$ values are sweep points, not calibrated to any device. At the
+mid-sweep point $p = 5\times10^{-3}$ the trained QAE was 61 pp above the
+mean of the random encoders, but the absolute fidelity has dropped from
+0.97 to 0.87. That delta would compound in any
 downstream computation that fed the decoded state into another circuit.
 
-Interpreting the slope: the dominant trend is approximately linear in
-$p$ across the trained range, not exponential, which is consistent with
-the depolarizing channel's contribution to expectation values for
-shallow circuits ($\langle O\rangle \to (1-p)^{n_g} \langle O\rangle$
-with $n_g \approx 30$ gates would give a steeper curve; the milder
-slope here reflects the local-cost cost function being dominated by
-stochastic projection onto $\ket{0}^{\text{trash}}$ rather than the
-full state).
+Most of the 61 pp is what any encoder that keeps the dominant
+eigenvector gets (post-hoc check, §1.1). Week-24 seed 2, which keeps
+only $v_1$, scores 0.8648 at $p = 0.005$ under the same noise model
+without retraining: 0.0058 below the trained mean, inside one standard
+deviation, and 60 pp above the random encoders, so it passes every
+week-25 gate. Two of the three seeds trained at $p = 0.005$ also keep
+only $v_1$ ($\langle v_2|P|v_2\rangle$ = 0.0034 and 0.0001; seed 1
+keeps both, 0.9904). Week-24 seed 0, which keeps both directions,
+scores 0.8788 at $p = 0.005$ without retraining, but less than seed 2
+at $p = 0.01$ and $0.02$ (0.7768 and 0.6191 against 0.7879 and 0.6638).
+The random encoders are the only control the week-25 script reports,
+and they are a low bar.
+
+Interpreting the slope: the decline flattens as $p$ grows (about 23
+fidelity per unit $p$ near $p = 0$, about 13 between $p = 0.01$ and
+$0.02$). That is what exponential decay toward a floor looks like: as
+the noise grows the trash register tends to the maximally mixed state,
+so $P(\text{trash} = 00)$ decays toward $1/4$, not toward 0.
+PennyLane's `DepolarizingChannel(p)` is
+$(1 - p)\rho + \tfrac{p}{3}(X\rho X + Y\rho Y + Z\rho Z)$, which shrinks
+the Bloch vector by $1 - 4p/3$. With that convention and the floor,
+$F(p) = 1/4 + (F(0) - 1/4)(1 - 4p/3)^n$ gives, for each noisy point in
+the table, $n = \ln[(F(p) - 1/4)/(F(0) - 1/4)] / \ln(1 - 4p/3)$ = 24,
+22, 20 and 19 at $p$ = 0.001, 0.005, 0.01 and 0.02 (with $(1 - p)^n$
+instead, 32, 30, 26 and 26). So the curve is consistent with a plain
+exponential in about 19 to 24 full-strength channels, with $n$ falling
+as $p$ grows. The circuit inserts 40 depolarizing channels (in each of
+the 4 layers, one after each of the 4 RY gates and two after each of
+the 3 CNOTs), and the model is retrained at each $p$, so this is a
+consistency check, not a model of the mechanism.
 
 ## 2. Where barren plateaus showed up — and where they didn't
 
 Tier 2 review item 4 said "move barren-plateau monitoring earlier in the
 workflow." Tier 3 followed it: the gradient norm was logged inline at
-epochs 0, 50, 100, 150, 199 of every training run. Result:
+epochs 0, 50, 100, 150 and 199 in week 23 (0 and 199 in weeks 24 and
+27). Result:
 
 | location | observation |
 |------|------|
-| init, $n=4$, $L=4$ | $\|\nabla C\|_2 = 1.31$ — well above the plateau |
-| training, all weeks | gradient norm decayed by ~3 orders of magnitude as the cost converged, but never crossed the $10^{-3}$ trainability floor |
-| under noise, $p = 0.02$ | $\|\nabla C\|_2$ at init dropped to 0.78 — depolarizing noise *flattens* the cost landscape, contributing additively to the plateau effect |
+| init, $n=4$, $L=4$ | $\|\nabla C\|_2 = 0.44$ (5-seed mean, range 0.28 to 0.51), well above the plateau |
+| training, week 23 | the 5-seed mean fell from 0.44 to $2.3 \times 10^{-3}$; seeds 2, 3 and 4 end below $10^{-3}$ because they converged (two at local fidelity 1.0000, one at the dominant-eigenvector encoder at 0.955, §1.1), not because they stalled |
+| under noise | not measured: the week 25 and week 27 noise runs do not log gradient norms |
 
 In short: the choice of $n_{\text{qubits}} = 4$ and $L = 4$ from the
-Tier 2 week-14 probe made the QAE trainable by construction. The
-**design discipline** that the Tier 2 review identified as Tier 3's
-pre-requisite worked exactly as predicted. We never had to react to a
-barren-plateau failure during training; we paid for it once at the
-ansatz-selection step.
+Tier 2 week-14 probe kept the QAE's initial gradients away from the
+plateau. The **design discipline** that the Tier 2 review identified as
+Tier 3's pre-requisite worked as intended, though not as predicted in
+size: the measured init gradient norm (0.44) is below the ~1.3 estimate
+in `tier3/week23_notes.md`, but above the 0.3 plateau gate. We never
+had to react to a barren-plateau failure during training; we paid for
+it once at the ansatz-selection step.
+
+One caveat on the cost itself. The training cost
+$C_G = 1 - P(\text{trash} = 00)$ projects onto both trash qubits at
+once. Cerezo et al., *Cost function dependent barren plateaus in
+shallow parametrized quantum circuits*, Nat. Commun. 12, 1791 (2021),
+DOI 10.1038/s41467-021-21728-w, classify this QAE cost as global (the
+kind that shows barren plateaus even for shallow circuits as qubits are
+added) and contrast it with a local version that averages
+$P(\text{trash bit } j = 0)$ over single trash qubits. With 2 trash
+qubits the two bound each other, $C_L \le C_G \le 2\,C_L$ (the upper
+bound is a union bound over the two trash bits), so here the choice
+changes the cost by at most a factor of 2; it becomes a trainability
+question only for larger trash registers. The scripts still call $P(\text{trash} = 00)$
+"local fidelity"; the name is historical.
 
 The unexplored region is $n \ge 6$. At $n = 6$ qubits, the week-14
 probe measured Var ≈ $3 \times 10^{-2}$ at init — still trainable, but
@@ -103,37 +205,43 @@ effective dimension, it might also be unnecessary.
 
 ## 3. Quantum-vs-classical scoreboard
 
+Week 26, same train/test split, 5 seeds:
+
 | model | params | test recon fidelity | notes |
 |------|---:|---:|------|
-| Linear classical AE | 256 | **0.999 ± 0.001** | oracle on a 4-D subspace |
-| QAE | 16 | **0.946 ± 0.018** | the headline result |
-| Matched nonlinear classical AE | 32 | **0.86 ± 0.04** | smallest sensible classical fight |
+| Linear classical AE | 256 | **1.0000 ± 0.0000** | oracle on a 2-D subspace |
+| QAE | 16 | **0.9871 ± 0.0258** | the headline result |
+| Small nonlinear classical AE | 136 | **0.9811 ± 0.0211** | closer small-model comparison, not parameter-matched |
 
 Three honest readings of this table:
 
 - **The linear AE wins decisively, but it's an oracle.** The H₂
-  ground-state manifold is a linear subspace by construction (the
-  Hamiltonian is parameterized by $r$ and the ground state is an
-  eigenvector of a continuously-varying matrix; a low-rank subspace
-  approximation is the right classical tool). You can't beat an oracle
-  with a model that doesn't know the geometry; you can only match it.
-  At 256 parameters the linear AE essentially *is* the SVD.
+  ground-state manifold is a 2-D linear subspace by symmetry (the
+  Hamiltonian conserves particle number and spin, and the bonding and
+  antibonding orbitals have opposite parity, so at every $r$ only
+  $\ket{1100}$ and $\ket{0011}$ are in the ground state's sector; a
+  low-rank subspace approximation is the right classical tool). You
+  can't beat an oracle with a model that doesn't know the geometry; you
+  can only match it. At 256 parameters the linear AE essentially *is* the SVD.
 
-- **The QAE outperforms the matched-parameter classical AE by
-  ~9 pp.** This is real, but the comparison is structurally awkward —
-  16 quantum parameters generate 16-D unitary transformations on a
-  16-D Hilbert space, which has more *expressivity per parameter* than
-  16 real linear weights on a 32-D real space. The "matched" classical
-  baseline is fighting with one hand tied. We report it because not
+- **The QAE and the small nonlinear classical AE tie.** The QAE is
+  ahead by 0.6 pp (0.9871 vs 0.9811), well inside one standard
+  deviation, and both have seeds that stop lower (for the QAE, seed 2
+  at 0.9355 in week 24). The comparison is also not
+  parameter-matched: the classical AE has 136 weights to the QAE's 16,
+  and no classical AE that reads all 32 input numbers can get down to
+  16 (a $32 \to 1 \to 32$ AE already has 64). The only
+  parameter-matched comparison in this curriculum is tier 2 week 17
+  (13 vs 13 parameters, a classifier). We report it because not
   reporting it is dishonest, but the conclusion isn't "quantum wins
   at parameter count" — it's "parameter count isn't the right
   comparison axis."
 
-- **The QAE has structural advantages the classical AE can't compete
-  with.** The classical AE needs the input as a $\mathbb{C}^{16}$
-  amplitude vector, which on real hardware costs full state tomography
-  — exponentially more measurements than the QAE needs (which
-  consumes the state directly). The classical AE also produces an
+- **At larger $n$ the QAE would have structural advantages (argued
+  here, not measured; see §6).** The classical AE needs the input as a
+  $\mathbb{C}^{16}$ amplitude vector, which on real hardware costs full
+  state tomography — in general exponentially more measurements than the
+  QAE needs (which consumes the state directly). The classical AE also produces an
   amplitude-vector output that has to be re-prepared on a quantum
   device for any downstream computation — also exponential overhead.
   Neither cost shows up in our simulator-based comparison, but they
@@ -149,29 +257,40 @@ is the realistic deployment.
 
 In rough order of expected impact:
 
-1. **Move to real hardware.** Tier 2 review item 2 carried over to
-   Tier 3 (we hit `default.mixed`, but not IBM). The next step is to
-   run a *trained* QAE on actual `ibm_kyoto` or a current device's
-   free tier, with a SWAP-test ancilla for fidelity measurement. The
-   noise model used here (uniform per-gate depolarizing) is the
-   simplest plausible — real devices have correlated, non-Markovian,
-   and gate-specific errors that this sweep doesn't capture.
+1. **Move to real hardware.** Tier 2 review item 2 carried over to Tier
+   3 (we hit `default.mixed`, but not IBM). The next step is to run a
+   *trained* QAE on a current IBM device's free tier, with a SWAP-test
+   ancilla for fidelity measurement. The noise model used here (uniform
+   per-gate depolarizing) is the simplest plausible — real devices have
+   correlated, non-Markovian, and gate-specific errors that this sweep
+   doesn't capture.
 
-2. **Pick a non-linear dataset.** H₂ ground states are a 4-D linear
-   subspace, which is exactly the regime where a linear classical AE
-   wins by construction. The next experiment is a dataset that's
-   geometrically linear in *some* state-space representation but not
-   in amplitude space — e.g., random circuit states under a controlled
-   structural prior, or eigenstates of a non-quadratic Hamiltonian
-   like the transverse-field Ising model away from its critical
-   point. There the linear-AE oracle goes away.
+2. **Test the QAE on data access, not on compression power.** A
+   non-linear dataset would not help the QAE. Its encoder is a unitary
+   followed by discarding the trash qubits, so over any set of training
+   states its mean trash fidelity can never exceed the sum of the $2^k$
+   largest eigenvalues of the states' average density matrix ($k$ code
+   qubits; here $k = 2$, so 4 eigenvalues). A linear map that projects
+   onto the matching $2^k$ eigenvectors (PCA with a $2^k$-dimensional
+   complex code) reaches exactly that sum, and reconstruction fidelity
+   is at most trash fidelity (§1.1). So a dataset that is not low-rank
+   in amplitude space would limit the QAE as much as the linear AE, and
+   might favour a nonlinear classical AE (not tested here).
+   `tier3/check_qae_bounds.py` (not one of the week scripts) checks
+   this on a curved 30-state family
+   with 13 eigenvalues above $10^{-6}$: an encoder built from the top 4
+   eigenvectors and the rank-4 projection both reach 0.6894, and no
+   Haar-random or RY+CNOT encoder goes above it. The case for a QAE is
+   that it acts on the quantum state without tomography (§3, §6). The
+   next experiment should keep a low-rank ensemble and test, at larger
+   $n$, a setting where a classical AE cannot read the amplitudes.
 
 3. **Train on the reconstruction cost directly.** We trained on the
-   Romero local cost because it's cheap and differentiable on
+   Romero trash-fidelity cost because it's cheap and differentiable on
    `default.qubit`. With `default.mixed` available, the full
    reconstruction-fidelity cost (encode → trace → re-inject → decode →
    overlap) is computable but slow. A side-by-side comparison of the
-   two cost functions on the same dataset would tighten the local-
+   two cost functions on the same dataset would tighten the trash-
    vs-recon-fidelity argument that Romero left implicit.
 
 4. **Add a SWAP-test estimator.** All fidelities here are computed by
@@ -194,7 +313,7 @@ In rough order of expected impact:
 
 ## 5. Cross-tier reflection
 
-Three tiers, ~21 weeks of sustained effort, one sentence of summary
+Three tiers, 27 weeks of sustained effort, one sentence of summary
 each:
 
 - **Tier 1**: read a quantum circuit fluently — gates, Bell, Grover,
@@ -204,28 +323,62 @@ each:
   quantum lost.
 - **Tier 3**: produce a single end-to-end quantum-native artifact (the
   H₂-ground-state QAE) with reproducibility, noise robustness, and
-  matched classical baselines, and write up what the result means.
+  classical autoencoder baselines (not parameter-matched), and write up
+  what the result means.
 
 The biggest tier-over-tier delta in the writing is honesty under
-pressure. Tier 1 was structured by Codebook progress; Tier 2 by a
-plan with assertion gates; Tier 3 by *its own falsifiable
-predictions*. The week-25 noise sweep, the week-24 Spearman test, and
-the week-26 head-to-head all had pre-registered pass criteria that
-could have failed (and would have, on a worse experiment). They
-didn't, but the discipline is what keeps the result trustworthy if it
-ever did.
+pressure. Tier 1 was structured by Codebook progress; Tier 2 by a plan
+with assertion gates; Tier 3 by *its own falsifiable predictions*,
+though not all of them could fail. In this review "the gates" are the
+thresholds committed with the scripts in 71ca939, none of which has
+changed since. The same commit also held a first `TIER3_REVIEW.md` whose
+numbers did not come from the committed scripts and were later replaced
+as unreproducible (9767eea), so the history cannot show that the
+thresholds were set before any result was seen; it shows only that they
+were not moved after the first recorded full run (c28a158), which missed
+one of them. `TIER3_PLAN.md` landed in the same commit and lists only
+some of the gates: week 23 has 5 gates in its script and 3 in the plan,
+and the plan's final gradient *variance* gate is a gradient *norm* gate
+in the script. The week-25 noise sweep had pass criteria that could have
+failed (test fidelity > 0.85 at $p = 0.005$ and monotone decay in $p$;
+the script also requires more than 30 pp over random encoders at
+$p = 0.005$), but an encoder that keeps only the dominant eigenvector passes
+all of them (§1.3), as one whose code state is the same for every $r$
+passes the week-23 and week-24 fidelity gates (§1.1): these
+mean-fidelity gates show that the dominant direction is compressed, not
+that the code carries $r$. Two other checks could not: 999 of 1000
+untrained encoders pass the week-24 Spearman gate (§1.2), and week 26's
+criterion was only that the head-to-head table exists. Week 23's
+final-gradient gate (5-seed mean norm > $10^{-3}$) is no evidence
+against a plateau either: a converged run has near-zero gradient, and
+the gate passes (mean 0.0023) because seed 1 is still leaving the
+plateau (0.0100; without it the mean would be about 0.0003). Seed 0's
+0.0015 is Adam oscillating at $P(\text{trash} = 00) = 1.0000$: over the
+last 20 epochs its loss ranges from 9.55e-06 to 2.14e-04 and ends above
+that minimum (`tier3/check_dominant_eigvec_baseline.log`). It stays in
+the script because it was committed with the scripts in 71ca939; the
+barren-plateau evidence is the init-gradient gate (0.44 > 0.3). The
+week-24 held-out split is weaker than it looks as well, since on this
+dataset held-out fidelity follows from training fidelity (§1.1). One
+gate did fail: week 23's across-seed std (0.0214 against < 0.02, §1.1).
+The script reports the miss instead of moving the threshold.
 
 ## 6. Closing thought
 
 Tier 2 ended with: *on the kinds of problems QML competes for today,
-classical is harder to beat than the marketing suggests*. Tier 3
-extends that with one nuance: **on quantum-native tasks where the
-input is already a quantum state and the output needs to feed into
-another quantum operation, classical models aren't competing at all
-— they need exponential pre- and post-processing to even enter the
-ring**. The QAE is the cleanest demonstration in this curriculum of a
-problem class where the question isn't "can quantum beat classical"
-but "is there a sensible classical comparator at all."
+classical is harder to beat than the marketing suggests*. Tier 3 adds
+one nuance, as an argument rather than a result: on quantum-native
+tasks where the input is already a quantum state and the output feeds
+another quantum operation, a classical autoencoder would need
+tomography on the way in and state preparation on the way out, and for
+large $n$ both costs grow exponentially in general. This study does
+not test that. At 4 qubits everything, the QAE included, is simulated
+classically at negligible cost, and on these states the 256-parameter
+linear AE reconstructs exactly while the 136-parameter AE ties the QAE.
+The QAE is the problem class in this curriculum where the question "is
+there a sensible classical comparator at all" comes up; answering it
+would need larger $n$ and quantum data that cannot be read out
+classically.
 
 The repo evolution closes cleanly:
 - `tier1/` — 8 weeks of literacy

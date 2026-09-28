@@ -6,7 +6,8 @@ Tier 2 / 2B.3. Working through:
   - sampling the p=1 (gamma, beta) energy surface from both backends and
     confirming they match within numerical noise
   - optimizing p=1 in Qiskit and recovering the same approximation ratio
-  - the barren-plateau probe (McClean et al. 2018): for a hardware-efficient
+  - the barren-plateau probe (McClean et al., Nat. Commun. 9, 4812 (2018),
+    DOI 10.1038/s41467-018-07090-4): for a hardware-efficient
     ansatz with depth = qubit count, Var[d<O>/dtheta_0] decays exponentially
     in the number of qubits.
 """

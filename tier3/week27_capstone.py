@@ -1,20 +1,23 @@
 """Week 27 - Tier 3 capstone.
 
-Single end-to-end script that re-runs the full pipeline at 5 seeds,
-saves a results CSV and a 2x2 figure panel, and asserts every
-headline number from weeks 23-26 reproduces within 2 standard
-deviations.
+Single end-to-end script that re-runs weeks 23-26 at 5 seeds (3 for the
+noise sweep), saves a results CSV and a 2x2 figure panel, and re-checks
+the weekly pass gates, loosened by 2 standard deviations of this run.
+It does not compare its numbers with the weekly scripts' output.
 
 Pipeline:
   1. Build H2 ground-state dataset (week 22).
-  2. Train QAE noiseless on train half, evaluate on test half (week 23-24).
+  2. Train QAE noiseless on all 22 states (week 23), then on the train
+     half with evaluation on the test half (week 24).
   3. Re-train QAE under depolarizing noise (week 25; reduced-grid sweep).
-  4. Train Linear AE and Matched AE classical baselines (week 26).
+  4. Train Linear AE and small nonlinear AE classical baselines (week 26).
   5. Aggregate and write tier3/week27_summary.csv + tier3/week27_results.png.
 
-Pass criteria are the original weekly gates, evaluated on this consolidated
-run. If anything regresses by more than 2 sigma the script fails its
-assertions.
+Pass criteria are weekly gates evaluated on this consolidated run:
+mean - threshold > -2 std for week 23 (0.95), week 24 test recon (0.85)
+and week 25 at p = 0.005 (0.85), plus |Spearman| > 0.9 (week 24) and
+linear AE > 0.95 (week 26), unloosened. The small AE and p = 0 / 0.02
+are reported but not gated.
 """
 
 import os
@@ -35,11 +38,9 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from scipy.stats import spearmanr
 
 from tier3.utils.states import (
     build_h2_dataset,
-    reduced_density_matrix,
     reconstruction_fidelity,
     local_fidelity,
     N_QUBITS,
@@ -54,6 +55,11 @@ from tier3.utils.classical import (
     train_classical_ae,
     reconstruction_fidelity_classical,
 )
+from tier3.utils.latent import (
+    latent_pca,
+    pc1_spearman,
+    random_encoder_spearman,
+)
 
 R_GRID = np.round(np.arange(0.4, 2.51, 0.1), 2)
 TRAIN_IDX = np.arange(0, len(R_GRID), 2)
@@ -65,6 +71,8 @@ SEEDS = (0, 1, 2, 3, 4)
 NOISE_SEEDS = (0, 1, 2)
 NOISE_LEVELS = (0.0, 0.005, 0.02)  # reduced sweep for the capstone
 NOISE_EPOCHS = 100
+N_CONTROL = 1000     # untrained encoders in the week-24 latent control
+CONTROL_SEED = 24    # same draws as week 24
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_PATH = os.path.join(THIS_DIR, "week27_summary.csv")
@@ -160,7 +168,7 @@ def main():
                      f"{train_loc_full.mean():.4f}",
                      f"{train_loc_full.std():.4f}", len(SEEDS)))
 
-    section("2. Week 24 - generalization on train/test split")
+    section("2. Week 24 - held-out (interpolation) train/test split")
     qae_train_rec = np.empty(len(SEEDS))
     qae_test_rec = np.empty(len(SEEDS))
     qae_test_loc = np.empty(len(SEEDS))
@@ -190,21 +198,19 @@ def main():
                      f"{qae_test_rec.std():.4f}", len(SEEDS)))
 
     section("3. Week 24 - latent-space monotonicity")
-    feats = []
-    for psi in states:
-        enc = seed0_U @ psi
-        T = enc.reshape(4, 4)
-        rho_code = T @ np.conj(T.T)
-        feats.append(rho_code.flatten())
-    feats = np.array(feats)
-    feats = np.concatenate([feats.real, feats.imag], axis=1)
-    feats_c = feats - feats.mean(axis=0, keepdims=True)
-    _, sing, Vt = np.linalg.svd(feats_c, full_matrices=False)
-    pcs = feats_c @ Vt.T
-    rho_pc1, _ = spearmanr(R_GRID, pcs[:, 0])
+    pcs, _ = latent_pca(states, seed0_U)
+    rho_pc1 = pc1_spearman(R_GRID, states, seed0_U)
+    ctrl = random_encoder_spearman(R_GRID, states, N_LAYERS, N_CONTROL,
+                                   CONTROL_SEED)
     print(f"  Spearman(r, PC1) : {rho_pc1:+.4f}")
+    print(f"  untrained encoders, |Spearman| : {ctrl.mean():.4f} +/- "
+          f"{ctrl.std():.4f} (median {np.median(ctrl):.4f}, "
+          f"{int(np.sum(ctrl > 0.9))} of {N_CONTROL} above 0.9)")
     csv_rows.append(("week24", "QAE", "all", "spearman_r_pc1",
                      f"{rho_pc1:+.4f}", "0.0", "1"))
+    csv_rows.append(("week24", "UntrainedEncoder", "all",
+                     "abs_spearman_r_pc1", f"{ctrl.mean():.4f}",
+                     f"{ctrl.std():.4f}", N_CONTROL))
 
     section("4. Week 25 - depolarizing noise sweep (reduced)")
     noise_table = {}
@@ -221,26 +227,26 @@ def main():
 
     section("5. Week 26 - classical baselines")
     lin_test = np.empty(len(SEEDS))
-    mat_test = np.empty(len(SEEDS))
+    small_test = np.empty(len(SEEDS))
     for i, seed in enumerate(SEEDS):
         m_lin, _ = train_classical_ae(
             train_states, code_dim=4, hidden_dim=None,
             n_epochs=N_EPOCHS, lr=LR, seed=seed,
         )
         lin_test[i], _ = reconstruction_fidelity_classical(m_lin, test_states)
-        m_mat, _ = train_classical_ae(
+        m_small, _ = train_classical_ae(
             train_states, code_dim=2, hidden_dim=2,
             n_epochs=N_EPOCHS, lr=LR, seed=seed,
         )
-        mat_test[i], _ = reconstruction_fidelity_classical(m_mat, test_states)
+        small_test[i], _ = reconstruction_fidelity_classical(m_small, test_states)
     print(f"  Linear AE test  : {lin_test.mean():.4f} +/- {lin_test.std():.4f}")
-    print(f"  Matched AE test : {mat_test.mean():.4f} +/- {mat_test.std():.4f}")
+    print(f"  Small AE test   : {small_test.mean():.4f} +/- {small_test.std():.4f}")
     csv_rows.append(("week26", "LinearAE", "test", "recon_fid",
                      f"{lin_test.mean():.4f}",
                      f"{lin_test.std():.4f}", len(SEEDS)))
-    csv_rows.append(("week26", "MatchedAE", "test", "recon_fid",
-                     f"{mat_test.mean():.4f}",
-                     f"{mat_test.std():.4f}", len(SEEDS)))
+    csv_rows.append(("week26", "SmallAE", "test", "recon_fid",
+                     f"{small_test.mean():.4f}",
+                     f"{small_test.std():.4f}", len(SEEDS)))
 
     section("6. Save CSV")
     with open(CSV_PATH, "w", newline="") as f:
@@ -261,7 +267,7 @@ def main():
     ax.plot([e[0] for e in history_seed0], [e[1] for e in history_seed0])
     ax.set_yscale("log")
     ax.set_xlabel("epoch")
-    ax.set_ylabel("Romero local cost")
+    ax.set_ylabel("Romero trash-fidelity cost")
     ax.set_title("(a) QAE training loss, seed = 0")
 
     # (0, 1) latent trajectory
@@ -271,7 +277,9 @@ def main():
     fig.colorbar(sc, ax=ax, label="r (A)")
     ax.set_xlabel("PC1(rho_code)")
     ax.set_ylabel("PC2(rho_code)")
-    ax.set_title(f"(b) latent trajectory, Spearman = {rho_pc1:+.3f}")
+    ax.set_title(f"(b) latent trajectory, Spearman = {rho_pc1:+.3f}\n"
+                 f"(untrained encoders: median |Spearman| = "
+                 f"{np.median(ctrl):.3f})")
 
     # (1, 0) noise sweep
     ax = axes[1, 0]
@@ -287,18 +295,21 @@ def main():
 
     # (1, 1) Q-vs-classical bars
     ax = axes[1, 1]
-    bar_names = ["QAE\n(16 par)", "Matched\nclassical\n(32 par)",
+    bar_names = ["QAE\n(16 par)",
+                 f"Small\nnonlinear AE\n({m_small.n_params()} par)",
                  "Linear AE\n(256 par)"]
-    bar_means = [qae_test_rec.mean(), mat_test.mean(), lin_test.mean()]
-    bar_sds = [qae_test_rec.std(), mat_test.std(), lin_test.std()]
+    bar_means = [qae_test_rec.mean(), small_test.mean(), lin_test.mean()]
+    bar_sds = [qae_test_rec.std(), small_test.std(), lin_test.std()]
     colors = ["#3a86ff", "#fb5607", "#06a77d"]
     ax.bar(bar_names, bar_means, yerr=bar_sds, capsize=4, color=colors,
            edgecolor="k", linewidth=0.5)
     ax.set_ylim(0.0, 1.05)
     ax.set_ylabel("test reconstruction fidelity")
     ax.set_title("(d) head-to-head: 5-seed mean +/- std")
-    for i, (mu, sd) in enumerate(zip(bar_means, bar_sds)):
-        ax.text(i, mu + sd + 0.02, f"{mu:.3f}", ha="center", fontsize=9)
+    # Value labels inside the bars, clear of the error bars and the title.
+    for i, mu in enumerate(bar_means):
+        ax.text(i, mu / 2, f"{mu:.3f}", ha="center", va="center",
+                fontsize=9, color="white", fontweight="bold")
 
     fig.suptitle("Tier 3 capstone: quantum autoencoder on H2 ground states",
                  fontsize=12)
@@ -308,26 +319,26 @@ def main():
     print(f"  saved {PNG_PATH}")
 
     section("Checkpoint assertions")
-    # week 23 reproduction
+    # week 23 gate (mean > 0.95), loosened by 2 sigma
     assert train_loc_full.mean() > 0.95 - 2 * train_loc_full.std(), \
         f"week 23 regression: full-curve local fid {train_loc_full.mean():.4f}"
-    # week 24 reproduction
+    # week 24 gates (test recon > 0.85 loosened by 2 sigma; |Spearman| > 0.9)
     assert qae_test_rec.mean() > 0.85 - 2 * qae_test_rec.std(), \
         f"week 24 regression: test recon {qae_test_rec.mean():.4f}"
     assert abs(rho_pc1) > 0.9, \
         f"latent monotonicity broken: |Spearman| = {abs(rho_pc1):.3f}"
-    # week 25 reproduction
+    # week 25 gate (p = 0.005 test fid > 0.85), loosened by 2 sigma
     test_at_005 = noise_table[0.005]
     assert test_at_005.mean() > 0.85 - 2 * test_at_005.std(), \
         f"week 25 regression: p=0.005 test fid {test_at_005.mean():.4f}"
-    # week 26 reproduction
+    # week 26 gate (linear AE > 0.95)
     assert lin_test.mean() > 0.95, \
         f"linear AE oracle broken: {lin_test.mean():.4f}"
     # artifacts exist
     assert os.path.exists(CSV_PATH)
     assert os.path.exists(PNG_PATH)
-    print(f"  PASS: capstone reproduces every weekly headline within 2 sigma; "
-          f"CSV + 4-panel figure saved.")
+    print(f"  PASS: weekly pass gates hold on this run (weeks 23-25 gates "
+          f"loosened by 2 sigma); CSV + 4-panel figure saved.")
 
 
 if __name__ == "__main__":
